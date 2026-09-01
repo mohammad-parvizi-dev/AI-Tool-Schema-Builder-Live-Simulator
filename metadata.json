@@ -1,0 +1,6 @@
+{
+  "name": "Trade Zone AI Tool Schema Builder & Live Simulator",
+  "description": "Visual admin builder to configure dynamic AI Tool schemas with multi-mode prompt types, multilingual UI, customizable fields, and real-time Trade Zone dark UI simulation and JSON exporter.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
