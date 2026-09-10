@@ -128,7 +128,7 @@ export const GeneratedRequestInspector: React.FC<GeneratedRequestInspectorProps>
         if (typeof fieldDef.label === 'string') {
           label = fieldDef.label;
         } else if (fieldDef.label && typeof fieldDef.label === 'object') {
-          label = fieldDef.label[simLanguage] || fieldDef.label.en || key;
+          label = (fieldDef.label as any)[simLanguage] || (fieldDef.label as any).en || key;
         }
       }
 

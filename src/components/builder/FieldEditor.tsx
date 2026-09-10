@@ -129,17 +129,17 @@ export const FieldEditor: React.FC<FieldEditorProps> = ({ fields, onChange }) =>
     updateField(fieldId, { options: [...opts, newOpt] });
   };
 
-  const updateOption = (fieldId: string, optId: string, updates: Partial<FieldOption>) => {
+  const updateOption = (fieldId: string, optIdx: number, updates: Partial<FieldOption>) => {
     const field = fields.find(f => f.id === fieldId);
     if (!field || !field.options) return;
-    const opts = field.options.map(o => (o.id === optId || o.value === optId) ? { ...o, ...updates } : o);
+    const opts = field.options.map((o, idx) => idx === optIdx ? { ...o, ...updates } : o);
     updateField(fieldId, { options: opts });
   };
 
-  const deleteOption = (fieldId: string, optId: string) => {
+  const deleteOption = (fieldId: string, optIdx: number) => {
     const field = fields.find(f => f.id === fieldId);
     if (!field || !field.options) return;
-    const opts = field.options.filter(o => o.id !== optId && o.value !== optId);
+    const opts = field.options.filter((_, idx) => idx !== optIdx);
     updateField(fieldId, { options: opts });
   };
 
@@ -535,8 +535,8 @@ export const FieldEditor: React.FC<FieldEditorProps> = ({ fields, onChange }) =>
                                 <label className="text-[9px] uppercase tracking-wider text-gray-500 block">Value</label>
                                 <input
                                   type="text"
-                                  value={opt.value}
-                                  onChange={(e) => updateOption(field.id, opt.id || opt.value, { value: e.target.value })}
+                                  value={opt.value ?? ''}
+                                  onChange={(e) => updateOption(field.id, optIdx, { value: e.target.value })}
                                   placeholder="e.g. BTC/USDT"
                                   className="w-full rounded border border-[#1e293b] bg-[#0d1117] px-2 py-1 font-mono text-[11px] text-blue-300"
                                 />
@@ -546,8 +546,8 @@ export const FieldEditor: React.FC<FieldEditorProps> = ({ fields, onChange }) =>
                                 <label className="text-[9px] uppercase tracking-wider text-gray-500 block">Display Label</label>
                                 <input
                                   type="text"
-                                  value={opt.label}
-                                  onChange={(e) => updateOption(field.id, opt.id || opt.value, { label: e.target.value })}
+                                  value={typeof opt.label === 'string' ? opt.label : (opt.label ? ((opt.label as any).en || (opt.label as any).fa || '') : '')}
+                                  onChange={(e) => updateOption(field.id, optIdx, { label: e.target.value })}
                                   placeholder="e.g. Bitcoin (BTC)"
                                   className="w-full rounded border border-[#1e293b] bg-[#0d1117] px-2 py-1 text-[11px] text-white"
                                 />
@@ -559,7 +559,7 @@ export const FieldEditor: React.FC<FieldEditorProps> = ({ fields, onChange }) =>
                                   <input
                                     type="text"
                                     value={opt.symbol || ''}
-                                    onChange={(e) => updateOption(field.id, opt.id || opt.value, { symbol: e.target.value.toUpperCase() })}
+                                    onChange={(e) => updateOption(field.id, optIdx, { symbol: e.target.value.toUpperCase() })}
                                     placeholder="BTC"
                                     className="w-full rounded border border-[#1e293b] bg-[#0d1117] px-2 py-1 text-[11px] font-bold text-amber-300 uppercase"
                                   />
@@ -568,7 +568,7 @@ export const FieldEditor: React.FC<FieldEditorProps> = ({ fields, onChange }) =>
                               <div className="pt-3">
                                 <button
                                   type="button"
-                                  onClick={() => deleteOption(field.id, opt.id || opt.value)}
+                                  onClick={() => deleteOption(field.id, optIdx)}
                                   className="rounded p-1 text-gray-500 hover:bg-rose-950/40 hover:text-rose-400"
                                 >
                                   <Trash2 className="h-3.5 w-3.5" />

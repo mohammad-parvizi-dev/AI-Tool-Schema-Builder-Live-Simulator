@@ -4,6 +4,7 @@ import { ModesManager } from './components/builder/ModesManager';
 import { LiveSimulator } from './components/simulator/LiveSimulator';
 import { JsonViewer } from './components/json/JsonViewer';
 import { PresetsBackupModal } from './components/modals/PresetsBackupModal';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { RootToolSchema, CustomPreset, ToolMode } from './types';
 import { defaultBuiltinPresets, blankSchemaPreset } from './data/presets';
 import { validateSchema } from './utils/validation';
@@ -176,12 +177,14 @@ export default function App() {
             id="panel-admin-builder"
             className="lg:col-span-6 xl:col-span-6 2xl:col-span-5 space-y-4"
           >
-            <ModesManager
-              modes={schema.modes}
-              activeModeId={activeModeId}
-              onSelectMode={setActiveModeId}
-              onChangeModes={handleUpdateModes}
-            />
+            <ErrorBoundary fallbackTitle="Visual Builder Error">
+              <ModesManager
+                modes={schema.modes}
+                activeModeId={activeModeId}
+                onSelectMode={setActiveModeId}
+                onChangeModes={handleUpdateModes}
+              />
+            </ErrorBoundary>
           </section>
 
           {/* Right Panel: Split Vertically (Live User Simulation Top + JSON Output Bottom) */}
@@ -191,11 +194,13 @@ export default function App() {
           >
             {/* Top Right: Interactive Live User Simulation (Trade Zone Dark UI) */}
             <div className="min-h-[580px] flex-1">
-              <LiveSimulator
-                schema={schema}
-                activeModeId={activeModeId}
-                onSelectMode={setActiveModeId}
-              />
+              <ErrorBoundary fallbackTitle="Simulator Error">
+                <LiveSimulator
+                  schema={schema}
+                  activeModeId={activeModeId}
+                  onSelectMode={setActiveModeId}
+                />
+              </ErrorBoundary>
             </div>
 
             {/* Bottom Right: Clean, Two-Way Live JSON Editor with 1-click Copy for Database */}

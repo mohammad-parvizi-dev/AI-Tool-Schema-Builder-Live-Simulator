@@ -71,7 +71,8 @@ export function validateSchema(schema: RootToolSchema): ValidationError[] {
         seenKeysInThisMode.add(fKey);
       }
 
-      if (!field.label || field.label.trim() === '') {
+      const labelStr = typeof field.label === 'string' ? field.label : ((field.label as any)?.en || (field.label as any)?.fa || '');
+      if (!labelStr || labelStr.trim() === '') {
         errors.push({
           path: `${fieldPath}.label`,
           message: `${modeName} Field "${fKey || fIdx + 1}": Field label is required`,

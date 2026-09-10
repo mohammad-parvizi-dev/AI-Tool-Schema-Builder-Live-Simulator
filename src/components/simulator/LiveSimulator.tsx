@@ -206,14 +206,16 @@ export const LiveSimulator: React.FC<LiveSimulatorProps> = ({
   const isRtl = simLanguage === 'fa' || simLanguage === 'ar';
 
   const getFieldLabel = (field: any) => {
+    if (!field) return '';
     if (typeof field.label === 'string') return field.label;
     if (field.label && typeof field.label === 'object') {
-      return field.label[simLanguage] || field.label.en || field.key;
+      return field.label[simLanguage] || field.label.en || field.key || '';
     }
-    return field.key;
+    return field.key || '';
   };
 
   const getFieldHelper = (field: any) => {
+    if (!field) return '';
     if (typeof field.description === 'string') return field.description;
     if (field.description && typeof field.description === 'object') {
       return field.description[simLanguage] || field.description.en || '';
@@ -222,6 +224,7 @@ export const LiveSimulator: React.FC<LiveSimulatorProps> = ({
   };
 
   const getFieldPlaceholder = (field: any) => {
+    if (!field) return '';
     if (typeof field.placeholder === 'string') return field.placeholder;
     if (field.placeholder && typeof field.placeholder === 'object') {
       return field.placeholder[simLanguage] || field.placeholder.en || '';
@@ -230,11 +233,12 @@ export const LiveSimulator: React.FC<LiveSimulatorProps> = ({
   };
 
   const getOptionLabel = (opt: any) => {
+    if (!opt) return '';
     if (typeof opt.label === 'string') return opt.label;
     if (opt.label && typeof opt.label === 'object') {
-      return opt.label[simLanguage] || opt.label.en || opt.value;
+      return opt.label[simLanguage] || opt.label.en || opt.value || '';
     }
-    return opt.value;
+    return opt.value || '';
   };
 
   const currentLangObj = SUPPORTED_LANGUAGES.find(l => l.code === simLanguage) || SUPPORTED_LANGUAGES[0];
@@ -437,96 +441,103 @@ export const LiveSimulator: React.FC<LiveSimulatorProps> = ({
                     </div>
 
                     {/* RENDER FIELD TYPE: search_select */}
-                    {field.type === 'search_select' && (
-                      <div className="relative">
-                        <button
-                          type="button"
-                          onClick={() => setOpenSearchFieldId(openSearchFieldId === field.id ? null : field.id)}
-                          className="flex w-full items-center justify-between rounded-md border border-[#1e293b] bg-[#0d1117] px-3 py-2 text-xs text-white transition hover:border-[#334155] focus:border-blue-500 focus:outline-none"
-                        >
-                          <div className="flex items-center gap-2">
-                            <div className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-600/30 text-[10px] font-bold text-blue-300">
-                              {(field.options?.find(o => o.value === value)?.symbol || value || 'C').slice(0, 3)}
-                            </div>
-                            <span className="font-medium text-white">
-                              {getOptionLabel(field.options?.find(o => o.value === value)) ||
-                               value ||
-                               'Select Option'}
-                            </span>
-                          </div>
-                          <ChevronDown className="h-4 w-4 text-gray-400" />
-                        </button>
-
-                        {/* Search Dropdown */}
-                        {openSearchFieldId === field.id && (
-                          <div className="absolute left-0 right-0 z-30 mt-1.5 max-h-56 overflow-y-auto rounded-lg border border-[#1e293b] bg-[#161b22] p-1.5 shadow-2xl">
-                            <div className="sticky top-0 mb-1 border-b border-[#1e293b] bg-[#161b22] pb-1.5">
-                              <div className="relative">
-                                <Search className="absolute left-2 top-2 h-3.5 w-3.5 text-gray-400" />
-                                <input
-                                  type="text"
-                                  value={searchAssetQuery}
-                                  onChange={(e) => setSearchAssetQuery(e.target.value)}
-                                  placeholder={simLanguage === 'fa' ? 'جستجوی ارز یا نماد...' : 'Search coin / asset...'}
-                                  className="w-full rounded-md border border-[#1e293b] bg-[#0d1117] py-1 pl-7 pr-2 text-xs text-white placeholder-gray-500 focus:outline-none"
-                                />
+                    {field.type === 'search_select' && (() => {
+                      const selectedOpt = (field.options || []).find(o => o && o.value === value);
+                      const selectedSymbol = selectedOpt?.symbol || (typeof value === 'string' ? value.slice(0, 3) : 'C');
+                      const displaySelected = selectedOpt ? getOptionLabel(selectedOpt) : (value || 'Select Option');
+                      return (
+                        <div className="relative">
+                          <button
+                            type="button"
+                            onClick={() => setOpenSearchFieldId(openSearchFieldId === field.id ? null : field.id)}
+                            className="flex w-full items-center justify-between rounded-md border border-[#1e293b] bg-[#0d1117] px-3 py-2 text-xs text-white transition hover:border-[#334155] focus:border-blue-500 focus:outline-none"
+                          >
+                            <div className="flex items-center gap-2 overflow-hidden">
+                              <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-600/30 text-[10px] font-bold text-blue-300">
+                                {selectedSymbol.slice(0, 3)}
                               </div>
+                              <span className="font-medium text-white truncate text-start">
+                                {displaySelected}
+                              </span>
                             </div>
-                            <div className="space-y-0.5">
-                              {(field.options || [])
-                                .filter(opt => {
-                                  const q = searchAssetQuery.toLowerCase();
-                                  const optLbl = getOptionLabel(opt).toLowerCase();
-                                  return (
-                                    opt.value.toLowerCase().includes(q) ||
-                                    optLbl.includes(q) ||
-                                    (opt.symbol || '').toLowerCase().includes(q)
-                                  );
-                                })
-                                .map((opt) => (
-                                  <button
-                                    key={opt.id}
-                                    type="button"
-                                    onClick={() => {
-                                      handleInputChange(field.key, opt.value);
-                                      setOpenSearchFieldId(null);
-                                      setSearchAssetQuery('');
-                                    }}
-                                    className={`flex w-full items-center justify-between rounded px-2.5 py-1.5 text-xs text-start transition ${
-                                      opt.value === value
-                                        ? 'bg-blue-600 text-white font-bold'
-                                        : 'text-gray-300 hover:bg-[#0d1117] hover:text-white'
-                                    }`}
-                                  >
-                                    <div className="flex items-center gap-2">
-                                      {opt.symbol && (
-                                        <span className="rounded bg-[#0d1117] px-1.5 py-0.5 text-[10px] font-mono font-bold text-blue-300 border border-[#1e293b]">
-                                          {opt.symbol}
+                            <ChevronDown className="h-4 w-4 text-gray-400 shrink-0" />
+                          </button>
+
+                          {/* Search Dropdown */}
+                          {openSearchFieldId === field.id && (
+                            <div className="absolute left-0 right-0 z-30 mt-1.5 max-h-56 overflow-y-auto rounded-lg border border-[#1e293b] bg-[#161b22] p-1.5 shadow-2xl">
+                              <div className="sticky top-0 mb-1 border-b border-[#1e293b] bg-[#161b22] pb-1.5">
+                                <div className="relative">
+                                  <Search className="absolute left-2 top-2 h-3.5 w-3.5 text-gray-400" />
+                                  <input
+                                    type="text"
+                                    value={searchAssetQuery}
+                                    onChange={(e) => setSearchAssetQuery(e.target.value)}
+                                    placeholder={simLanguage === 'fa' ? 'جستجوی ارز یا نماد...' : 'Search coin / asset...'}
+                                    className="w-full rounded-md border border-[#1e293b] bg-[#0d1117] py-1 pl-7 pr-2 text-xs text-white placeholder-gray-500 focus:outline-none"
+                                  />
+                                </div>
+                              </div>
+                              <div className="space-y-0.5">
+                                {(field.options || [])
+                                  .filter(opt => {
+                                    if (!opt) return false;
+                                    const q = (searchAssetQuery || '').toLowerCase();
+                                    const optLbl = (getOptionLabel(opt) || '').toLowerCase();
+                                    const optVal = (opt.value || '').toLowerCase();
+                                    const optSym = (opt.symbol || '').toLowerCase();
+                                    return (
+                                      optVal.includes(q) ||
+                                      optLbl.includes(q) ||
+                                      optSym.includes(q)
+                                    );
+                                  })
+                                  .map((opt, optIdx) => (
+                                    <button
+                                      key={opt.id || opt.value || optIdx}
+                                      type="button"
+                                      onClick={() => {
+                                        handleInputChange(field.key, opt.value);
+                                        setOpenSearchFieldId(null);
+                                        setSearchAssetQuery('');
+                                      }}
+                                      className={`flex w-full items-center justify-between rounded px-2.5 py-1.5 text-xs text-start transition ${
+                                        opt.value === value
+                                          ? 'bg-blue-600 text-white font-bold'
+                                          : 'text-gray-300 hover:bg-[#0d1117] hover:text-white'
+                                      }`}
+                                    >
+                                      <div className="flex items-center gap-2">
+                                        {opt.symbol && (
+                                          <span className="rounded bg-[#0d1117] px-1.5 py-0.5 text-[10px] font-mono font-bold text-blue-300 border border-[#1e293b]">
+                                            {opt.symbol}
+                                          </span>
+                                        )}
+                                        <span>{getOptionLabel(opt) || opt.value || `Option ${optIdx + 1}`}</span>
+                                      </div>
+                                      {opt.badge && (
+                                        <span className="rounded bg-amber-500/20 px-1.5 py-0.2 text-[9px] font-semibold text-amber-300">
+                                          {opt.badge}
                                         </span>
                                       )}
-                                      <span>{getOptionLabel(opt)}</span>
-                                    </div>
-                                    {opt.badge && (
-                                      <span className="rounded bg-amber-500/20 px-1.5 py-0.2 text-[9px] font-semibold text-amber-300">
-                                        {opt.badge}
-                                      </span>
-                                    )}
-                                  </button>
-                                ))}
+                                    </button>
+                                  ))}
+                              </div>
                             </div>
-                          </div>
-                        )}
-                      </div>
-                    )}
+                          )}
+                        </div>
+                      );
+                    })()}
 
                     {/* RENDER FIELD TYPE: pills */}
                     {field.type === 'pills' && (
                       <div className="flex flex-wrap gap-1.5">
-                        {(field.options || []).map((opt) => {
+                        {(field.options || []).map((opt, optIdx) => {
+                          if (!opt) return null;
                           const isOptActive = String(value) === String(opt.value);
                           return (
                             <button
-                              key={opt.id}
+                              key={opt.id || opt.value || optIdx}
                               type="button"
                               onClick={() => handleInputChange(field.key, opt.value)}
                               className={`rounded-md px-3 py-1.5 text-xs font-semibold transition ${
@@ -535,7 +546,7 @@ export const LiveSimulator: React.FC<LiveSimulatorProps> = ({
                                   : 'bg-[#0d1117] text-gray-300 border border-[#1e293b] hover:border-[#334155] hover:text-white'
                               }`}
                             >
-                              {getOptionLabel(opt)}
+                              {getOptionLabel(opt) || opt.value || `Option ${optIdx + 1}`}
                             </button>
                           );
                         })}
@@ -549,11 +560,14 @@ export const LiveSimulator: React.FC<LiveSimulatorProps> = ({
                         onChange={(e) => handleInputChange(field.key, e.target.value)}
                         className="w-full rounded-md border border-[#1e293b] bg-[#0d1117] px-3 py-2 text-xs text-white transition focus:border-blue-500 focus:outline-none"
                       >
-                        {(field.options || []).map((opt) => (
-                          <option key={opt.id} value={opt.value}>
-                            {getOptionLabel(opt)}
-                          </option>
-                        ))}
+                        {(field.options || []).map((opt, optIdx) => {
+                          if (!opt) return null;
+                          return (
+                            <option key={opt.id || opt.value || optIdx} value={opt.value}>
+                              {getOptionLabel(opt) || opt.value || `Option ${optIdx + 1}`}
+                            </option>
+                          );
+                        })}
                       </select>
                     )}
 
