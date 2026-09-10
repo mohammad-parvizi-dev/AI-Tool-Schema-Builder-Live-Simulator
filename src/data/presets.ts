@@ -8,12 +8,18 @@ export const cryptoSignalBotSchema: RootToolSchema = {
       title: {
         en: 'Scalp & Rapid Breakout',
         fa: 'اسکالپ و شکست سریع',
-        ar: 'المضاربة السريعة والاختراق'
+        ar: 'المضاربة السريعة والاختراق',
+        zh: '高频超短线与急速突破',
+        es: 'Scalping y Ruptura Rápida',
+        tr: 'Scalp ve Hızlı Kırılım'
       },
       description: {
         en: 'High-frequency setup targeting immediate orderbook imbalance, volatility surges, and quick TP targets on low timeframes.',
         fa: 'تحلیل سریع با دقت بالا برای موج‌های کوتاه‌مدت، عدم تعادل دفتر سفارشات و تارگت‌های سریع در تایم‌فریم‌های پایین.',
-        ar: 'تحليل عالي التردد يستهدف اختلال دفتر الأوامر والتقلبات السريعة وأهداف أرباح فورية على الفترات الزمنية القصيرة.'
+        ar: 'تحليل عالي التردد يستهدف اختلال دفتر الأوامر والتقلبات السريعة وأهداف أرباح فورية على الفترات الزمنية القصيرة.',
+        zh: '针对低周期订单簿失衡、波动率激增及快速止盈的高频交易策略。',
+        es: 'Configuración de alta frecuencia dirigida al desequilibrio del libro de órdenes y objetivos rápidos.',
+        tr: 'Düşük zaman dilimlerinde ani emir defteri dengesizliklerini ve hızlı kâr hedeflerini hedefleyen yüksek frekanslı analiz.'
       },
       icon: 'Zap',
       badge_color: 'amber',
@@ -123,12 +129,18 @@ Deliver a structured signal breakdown:
       title: {
         en: 'Swing & Trend Structure',
         fa: 'سوئینگ و ساختار روند',
-        ar: 'صفقات السوينغ وتتبع الاتجاه'
+        ar: 'صفقات السوينغ وتتبع الاتجاه',
+        zh: '波段趋势与市场结构',
+        es: 'Swing y Estructura de Tendencia',
+        tr: 'Swing ve Trend Yapısı'
       },
       description: {
         en: 'Multi-day position modeling based on market structure shifts, institutional order blocks, and key Fibonacci retracements.',
         fa: 'طراحی معاملات چندروزه بر اساس سطوح ساختاری هفتگی و روزانه، اوردربلاک‌های نهادی و حمایت/مقاومت‌های کلان.',
-        ar: 'نمذجة صفقات متعددة الأيام مبنية على تغيرات هيكل السوق والمستويات المؤسسية الكبرى.'
+        ar: 'نمذجة صفقات متعددة الأيام مبنية على تغيرات هيكل السوق والمستويات المؤسسية الكبرى.',
+        zh: '基于市场结构转变、机构订单块和关键斐波那契回撤的多日持仓模型。',
+        es: 'Modelado de posiciones de varios días basado en cambios de estructura de mercado y bloques de órdenes.',
+        tr: 'Piyasa yapısı değişimleri, kurumsal emir blokları ve Fibonacci seviyelerine dayalı çok günlük pozisyon modellemesi.'
       },
       icon: 'BarChart2',
       badge_color: 'blue',
@@ -231,12 +243,18 @@ Produce a detailed Swing Strategy Plan:
       title: {
         en: 'Liquidity Map & Trap Detector',
         fa: 'نقشه نقدینگی و شکار استاپ',
-        ar: 'خريطة السيولة ومصائد السوق'
+        ar: 'خريطة السيولة ومصائد السوق',
+        zh: '流动性热力图与陷阱捕获',
+        es: 'Mapa de Liquidez y Trampas',
+        tr: 'Likidite Haritası ve Avı'
       },
       description: {
         en: 'Identify liquidation clusters, fake breakout traps (Turtle Soup), and institutional stop runs.',
         fa: 'شناسایی استخرهای تجمیع استاپ‌لاس، شکست‌های فیک نهادی و تله‌های مارکت‌میکر برای ورود در نقاط چرخش.',
-        ar: 'تحديد كتل التصفية ومصائد الاختراق الوهمية ونقاط سحب السيولة المؤسسية.'
+        ar: 'تحديد كتل التصفية ومصائد الاختراق الوهمية ونقاط سحب السيولة المؤسسية.',
+        zh: '识别强平清算聚集区、假突破陷阱及机构猎杀止损点。',
+        es: 'Identifica clústeres de liquidación, trampas de ruptura falsa y barridos de stop-loss.',
+        tr: 'Likidasyon havuzlarını, sahte kırılım tuzaklarını ve kurumsal stop avlarını tespit edin.'
       },
       icon: 'Layers',
       badge_color: 'cyan',

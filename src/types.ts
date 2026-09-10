@@ -1,4 +1,21 @@
-export type SupportedLanguage = 'fa' | 'en' | 'ar';
+export type SupportedLanguage = 'en' | 'fa' | 'ar' | 'zh' | 'es' | 'tr';
+
+export interface LanguageInfo {
+  code: SupportedLanguage;
+  name: string;
+  nativeName: string;
+  flag: string;
+  isRtl: boolean;
+}
+
+export const SUPPORTED_LANGUAGES: LanguageInfo[] = [
+  { code: 'en', name: 'English', nativeName: 'English', flag: '🇺🇸', isRtl: false },
+  { code: 'fa', name: 'Persian', nativeName: 'فارسی', flag: '🇮🇷', isRtl: true },
+  { code: 'ar', name: 'Arabic', nativeName: 'العربية', flag: '🇸🇦', isRtl: true },
+  { code: 'zh', name: 'Chinese', nativeName: '中文', flag: '🇨🇳', isRtl: false },
+  { code: 'es', name: 'Spanish', nativeName: 'Español', flag: '🇪🇸', isRtl: false },
+  { code: 'tr', name: 'Turkish', nativeName: 'Türkçe', flag: '🇹🇷', isRtl: false },
+];
 
 export type FieldType = 
   | 'search_select'
@@ -13,6 +30,10 @@ export interface LocalizedString {
   en: string;
   fa: string;
   ar?: string;
+  zh?: string;
+  es?: string;
+  tr?: string;
+  [key: string]: string | undefined;
 }
 
 export interface FieldOption {
@@ -51,8 +72,8 @@ export interface ToolMode {
   mode_id: string;
   title: LocalizedString;
   description: LocalizedString;
-  prompt_template: string;
-  display_template: string;
+  prompt_template?: string;
+  display_template?: string;
   icon?: string;
   badge_color?: string;
   fields: SchemaField[];
@@ -67,8 +88,8 @@ export interface ExportedToolMode {
   mode_id: string;
   title: LocalizedString;
   description: LocalizedString;
-  prompt_template: string;
-  display_template: string;
+  prompt_template?: string;
+  display_template?: string;
   fields: Array<{
     key: string;
     label: string;

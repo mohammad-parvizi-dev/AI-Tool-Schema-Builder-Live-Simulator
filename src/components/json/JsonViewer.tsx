@@ -117,7 +117,7 @@ function toCleanExportObject(schema: RootToolSchema): ExportedRootSchema {
       mode_id: m.mode_id || m.id,
       title: m.title,
       description: m.description,
-      prompt_template: m.prompt_template,
+      prompt_template: m.prompt_template ?? '',
       display_template: m.display_template || '',
       fields: (m.fields || []).map(f => {
         const cleanField: any = {

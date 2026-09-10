@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Send, 
   Sparkles, 
@@ -17,11 +17,79 @@ import {
   RootToolSchema, 
   ToolMode, 
   SupportedLanguage, 
+  SUPPORTED_LANGUAGES,
   SimulationResult,
   N8nWebhookPayload
 } from '../../types';
 import { compileTemplate, generateMockAiResponse } from '../../utils/promptCompiler';
 import { GeneratedRequestInspector } from './GeneratedRequestInspector';
+
+const uiTranslations: Record<string, Record<SupportedLanguage, string>> = {
+  selectMode: {
+    en: 'Select Analysis Mode',
+    fa: 'انتخاب حالت تحلیل',
+    ar: 'اختر نوع التحليل',
+    zh: '选择分析模式',
+    es: 'Seleccionar Modo de Análisis',
+    tr: 'Analiz Modunu Seçin',
+  },
+  modesCount: {
+    en: 'Modes',
+    fa: 'حالت موجود',
+    ar: 'أوضاع متاحة',
+    zh: '个模式',
+    es: 'Modos',
+    tr: 'Mod',
+  },
+  inputsCount: {
+    en: 'inputs',
+    fa: 'فیلد',
+    ar: 'حقول',
+    zh: '个字段',
+    es: 'campos',
+    tr: 'girdi',
+  },
+  active: {
+    en: 'Active',
+    fa: 'فعال',
+    ar: 'نشط',
+    zh: '当前生效',
+    es: 'Activo',
+    tr: 'Aktif',
+  },
+  analysisParams: {
+    en: 'Analysis Parameters',
+    fa: 'تنظیم پارامترهای تحلیل',
+    ar: 'إعدادات المعاملات',
+    zh: '分析参数设置',
+    es: 'Parámetros de Análisis',
+    tr: 'Analiz Parametreleri',
+  },
+  noFields: {
+    en: 'No input fields defined for this mode.',
+    fa: 'فیلدی برای این حالت اضافه نشده است',
+    ar: 'لم يتم تحديد حقول لهذا الوضع.',
+    zh: '该模式尚未配置输入字段。',
+    es: 'No hay campos definidos para este modo.',
+    tr: 'Bu mod için tanımlanmış alan yok.',
+  },
+  generating: {
+    en: 'Analyzing Orderbook & Processing Quantitative Signal...',
+    fa: 'در حال تحلیل دفتر سفارشات و پردازش الگوریتمی...',
+    ar: 'جاري تحليل الأوامر ومعالجة الخوارزميات...',
+    zh: '正在分析订单簿并计算量化信号...',
+    es: 'Analizando libro de órdenes y procesando señal cuantitativa...',
+    tr: 'Emir defteri analiz ediliyor ve algoritmik sinyal işleniyor...',
+  },
+  generateBtn: {
+    en: 'Generate AI Quantitative Analysis',
+    fa: 'ارسال درخواست و تولید تحلیل هوش مصنوعی',
+    ar: 'إرسال الطلب وإنشاء التحليل بالذكاء الاصطناعي',
+    zh: '生成 AI 量化分析与交易信号',
+    es: 'Generar Análisis Cuantitativo de IA',
+    tr: 'Yapay Zeka Kantitatif Analizi Üret',
+  },
+};
 
 interface LiveSimulatorProps {
   schema: RootToolSchema;
@@ -34,7 +102,8 @@ export const LiveSimulator: React.FC<LiveSimulatorProps> = ({
   activeModeId,
   onSelectMode
 }) => {
-  const [simLanguage, setSimLanguage] = useState<SupportedLanguage>('fa');
+  const [simLanguage, setSimLanguage] = useState<SupportedLanguage>('en');
+  const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
   const [formValues, setFormValues] = useState<Record<string, any>>({});
   const [isGenerating, setIsGenerating] = useState(false);
   const [simulationResult, setSimulationResult] = useState<SimulationResult | null>(null);
@@ -42,6 +111,17 @@ export const LiveSimulator: React.FC<LiveSimulatorProps> = ({
   const [copiedPrompt, setCopiedPrompt] = useState(false);
   const [searchAssetQuery, setSearchAssetQuery] = useState('');
   const [openSearchFieldId, setOpenSearchFieldId] = useState<string | null>(null);
+  const langMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (langMenuRef.current && !langMenuRef.current.contains(e.target as Node)) {
+        setIsLangMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const activeMode: ToolMode = (schema.modes || []).find(m => m.id === activeModeId) || (schema.modes || [])[0] || {
     id: 'default',
@@ -83,7 +163,9 @@ export const LiveSimulator: React.FC<LiveSimulatorProps> = ({
         ? (activeMode.title[simLanguage] || activeMode.title.en || activeMode.mode_id || 'Trade Mode')
         : String(activeMode.title || activeMode.mode_id || 'Trade Mode');
 
-      const compiled = compileTemplate(activeMode.prompt_template, formValues, simLanguage);
+      const compiled = activeMode.prompt_template?.trim()
+        ? compileTemplate(activeMode.prompt_template, formValues, simLanguage)
+        : '';
       const summaryTemplate = activeMode.display_template || '{asset} • {timeframe}';
       const summary = compileTemplate(summaryTemplate, formValues, simLanguage);
       const mockAi = generateMockAiResponse(modeTitle, formValues, simLanguage);
@@ -92,7 +174,7 @@ export const LiveSimulator: React.FC<LiveSimulatorProps> = ({
         mode_id: activeMode.mode_id || activeMode.id,
         display_title: modeTitle,
         display_summary: summary || modeTitle,
-        compiled_prompt: compiled,
+        compiled_prompt: compiled || '',
         inputs: {
           ...formValues,
           language: simLanguage
@@ -155,6 +237,8 @@ export const LiveSimulator: React.FC<LiveSimulatorProps> = ({
     return opt.value;
   };
 
+  const currentLangObj = SUPPORTED_LANGUAGES.find(l => l.code === simLanguage) || SUPPORTED_LANGUAGES[0];
+
   return (
     <div 
       id="live-user-simulator"
@@ -181,47 +265,48 @@ export const LiveSimulator: React.FC<LiveSimulatorProps> = ({
           </div>
         </div>
 
-        {/* Live Simulator Language Switcher */}
-        <div className="flex items-center gap-1.5" dir="ltr">
-          <span className="text-[11px] font-medium text-gray-400">Language:</span>
-          <div className="flex rounded-md bg-[#0d1117] p-0.5 border border-[#1e293b]">
-            <button
-              type="button"
-              id="sim-lang-fa"
-              onClick={() => setSimLanguage('fa')}
-              className={`rounded px-2.5 py-0.5 text-xs font-bold transition ${
-                simLanguage === 'fa'
-                  ? 'bg-blue-600 text-white shadow-sm'
-                  : 'text-gray-400 hover:text-gray-200'
-              }`}
+        {/* Live Simulator Language Switcher matching uploaded design */}
+        <div className="relative" ref={langMenuRef} dir="ltr">
+          <button
+            type="button"
+            id="sim-lang-dropdown-trigger"
+            onClick={() => setIsLangMenuOpen(!isLangMenuOpen)}
+            className="flex items-center gap-2 rounded-xl bg-[#0d1117] hover:bg-[#161b22] px-3 py-1.5 text-xs font-semibold text-gray-200 border border-[#1e293b] shadow-sm transition hover:border-[#334155]"
+          >
+            <span className="text-base">{currentLangObj.flag}</span>
+            <span>{currentLangObj.name}</span>
+            <ChevronDown className={`h-3.5 w-3.5 text-gray-400 transition-transform duration-200 ${isLangMenuOpen ? 'rotate-180' : ''}`} />
+          </button>
+
+          {isLangMenuOpen && (
+            <div 
+              id="sim-lang-dropdown-menu"
+              className="absolute right-0 top-full mt-2 w-48 rounded-2xl border border-[#1e293b] bg-[#0c1322] p-1.5 shadow-2xl z-50 animate-in fade-in zoom-in-95 backdrop-blur-md"
             >
-              🇮🇷 فارسی
-            </button>
-            <button
-              type="button"
-              id="sim-lang-en"
-              onClick={() => setSimLanguage('en')}
-              className={`rounded px-2.5 py-0.5 text-xs font-bold transition ${
-                simLanguage === 'en'
-                  ? 'bg-blue-600 text-white shadow-sm'
-                  : 'text-gray-400 hover:text-gray-200'
-              }`}
-            >
-              🇬🇧 English
-            </button>
-            <button
-              type="button"
-              id="sim-lang-ar"
-              onClick={() => setSimLanguage('ar')}
-              className={`rounded px-2.5 py-0.5 text-xs font-bold transition ${
-                simLanguage === 'ar'
-                  ? 'bg-blue-600 text-white shadow-sm'
-                  : 'text-gray-400 hover:text-gray-200'
-              }`}
-            >
-              🇸🇦 العربية
-            </button>
-          </div>
+              {SUPPORTED_LANGUAGES.map((lang) => {
+                const isSelected = simLanguage === lang.code;
+                return (
+                  <button
+                    key={lang.code}
+                    type="button"
+                    onClick={() => {
+                      setSimLanguage(lang.code);
+                      setIsLangMenuOpen(false);
+                    }}
+                    className={`flex w-full items-center gap-3 rounded-xl px-3 py-2 text-xs font-medium transition text-left ${
+                      isSelected
+                        ? 'bg-[#1e293b] text-white font-bold shadow-sm'
+                        : 'text-gray-300 hover:bg-[#161b22] hover:text-white'
+                    }`}
+                  >
+                    <span className="text-base">{lang.flag}</span>
+                    <span className="flex-1">{lang.name}</span>
+                    {isSelected && <Check className="h-3.5 w-3.5 text-blue-400" />}
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
 
@@ -235,10 +320,10 @@ export const LiveSimulator: React.FC<LiveSimulatorProps> = ({
             </div>
             <div>
               <h2 className="text-sm font-bold text-white">
-                {activeMode.title[simLanguage] || activeMode.title.en || 'Trade Zone AI Engine'}
+                {activeMode.title[simLanguage] || activeMode.title.en || activeMode.title.fa || 'Trade Zone AI Engine'}
               </h2>
               <p className="mt-0.5 text-xs text-gray-400 line-clamp-2">
-                {activeMode.description[simLanguage] || activeMode.description.en || 'Real-time AI Quantitative Analysis Engine'}
+                {activeMode.description[simLanguage] || activeMode.description.en || activeMode.description.fa || 'Real-time AI Quantitative Analysis Engine'}
               </p>
             </div>
           </div>
@@ -248,18 +333,18 @@ export const LiveSimulator: React.FC<LiveSimulatorProps> = ({
         <div>
           <div className="mb-2 flex items-center justify-between">
             <label className="text-xs font-bold uppercase tracking-wider text-gray-300">
-              {simLanguage === 'fa' ? 'انتخاب حالت تحلیل' : simLanguage === 'ar' ? 'اختر نوع التحليل' : 'Select Analysis Mode'}
+              {uiTranslations.selectMode[simLanguage] || 'Select Analysis Mode'}
             </label>
             <span className="text-[11px] text-blue-400 font-medium">
-              {(schema.modes || []).length} {simLanguage === 'fa' ? 'حالت موجود' : 'Modes'}
+              {(schema.modes || []).length} {uiTranslations.modesCount[simLanguage] || 'Modes'}
             </span>
           </div>
 
           <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
             {(schema.modes || []).map((mode, mIdx) => {
               const isSelected = mode.id === activeMode.id;
-              const title = mode.title[simLanguage] || mode.title.en || `Mode ${mIdx + 1}`;
-              const desc = mode.description[simLanguage] || mode.description.en || '';
+              const title = mode.title[simLanguage] || mode.title.en || mode.title.fa || `Mode ${mIdx + 1}`;
+              const desc = mode.description[simLanguage] || mode.description.en || mode.description.fa || '';
 
               return (
                 <button
@@ -296,9 +381,9 @@ export const LiveSimulator: React.FC<LiveSimulatorProps> = ({
                   </div>
 
                   <div className="mt-2.5 pt-2 border-t border-[#1e293b] flex items-center justify-between text-[10px] font-mono text-gray-500">
-                    <span>{(mode.fields || []).length} {simLanguage === 'fa' ? 'فیلد' : 'inputs'}</span>
+                    <span>{(mode.fields || []).length} {uiTranslations.inputsCount[simLanguage] || 'inputs'}</span>
                     <span className="text-blue-400 group-hover:translate-x-0.5 transition">
-                      {isSelected ? (simLanguage === 'fa' ? '✓ فعال' : 'Active') : '→'}
+                      {isSelected ? `✓ ${uiTranslations.active[simLanguage] || 'Active'}` : '→'}
                     </span>
                   </div>
                 </button>
@@ -313,17 +398,17 @@ export const LiveSimulator: React.FC<LiveSimulatorProps> = ({
             <h3 className="text-xs font-bold text-gray-200 flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-blue-500" />
               <span>
-                {simLanguage === 'fa' ? 'تنظیم پارامترهای تحلیل' : simLanguage === 'ar' ? 'إعدادات المعاملات' : 'Analysis Parameters'}
+                {uiTranslations.analysisParams[simLanguage] || 'Analysis Parameters'}
               </span>
             </h3>
             <span className="font-mono text-[11px] text-blue-400">
-              {activeMode.title[simLanguage] || activeMode.title.en}
+              {activeMode.title[simLanguage] || activeMode.title.en || activeMode.title.fa}
             </span>
           </div>
 
           {(activeMode.fields || []).length === 0 ? (
             <div className="py-6 text-center text-xs text-gray-500">
-              {simLanguage === 'fa' ? 'فیلدی برای این حالت اضافه نشده است' : 'No input fields defined for this mode.'}
+              {uiTranslations.noFields[simLanguage] || 'No input fields defined for this mode.'}
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -555,22 +640,14 @@ export const LiveSimulator: React.FC<LiveSimulatorProps> = ({
                 <>
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
                   <span>
-                    {simLanguage === 'fa' 
-                      ? 'در حال تحلیل دفتر سفارشات و پردازش الگوریتمی...' 
-                      : simLanguage === 'ar'
-                      ? 'جاري تحليل الأوامر ومعالجة الخوارزميات...'
-                      : 'Analyzing Orderbook & Processing Quantitative Signal...'}
+                    {uiTranslations.generating[simLanguage] || 'Analyzing Orderbook & Processing Quantitative Signal...'}
                   </span>
                 </>
               ) : (
                 <>
                   <Sparkles className="h-4 w-4 text-amber-300" />
                   <span>
-                    {simLanguage === 'fa' 
-                      ? 'ارسال درخواست و تولید تحلیل هوش مصنوعی' 
-                      : simLanguage === 'ar'
-                      ? 'إرسال الطلب وإنشاء التحليل بالذكاء الاصطناعي'
-                      : 'Generate AI Quantitative Analysis'}
+                    {uiTranslations.generateBtn[simLanguage] || 'Generate AI Quantitative Analysis'}
                   </span>
                   <Send className={`h-3.5 w-3.5 ${isRtl ? 'rotate-180' : ''}`} />
                 </>

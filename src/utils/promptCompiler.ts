@@ -92,6 +92,66 @@ export function generateMockAiResponse(
       ],
       detailed_notes: `📌 التوصية: قم بتأمين الصفقة (نقل الوقف لنقطة الدخول) فور تحقيق الهدف الأول.`
     };
+  } else if (lang === 'zh') {
+    return {
+      signal_type,
+      confidence,
+      summary: `已基于 ${modeTitle} 策略模型完成 ${asset} 在 ${tf} 级别的量化算法分析。订单簿深度与成交量分布显示机构资金强力吸收。`,
+      entry_zone: isBullish ? `$87,420 - $87,950 (FVG 失衡区回踩)` : `$89,800 - $90,200 (供给区阻力遇阻)`,
+      targets: [
+        `目标 1: $88,600 (+1.2% 超短线止盈)`,
+        `目标 2: $89,450 (+2.4% 流动性池冲击)`,
+        `目标 3: $90,900 (+4.1% 趋势延伸目标)`
+      ],
+      stop_loss: isBullish ? `$86,850 (波段低点结构失效)` : `$90,800 (突破供给区止损)`,
+      risk_reward: `1 : 2.85`,
+      indicators_breakdown: [
+        { name: 'CVD 累积成交量差', status: '机构主动买盘吸收 (Absorption)', sentiment: 'bullish' },
+        { name: 'RSI 动量指标 (14)', status: '多头动能扩张 (58.4)', sentiment: 'bullish' },
+        { name: '清算热力图', status: '扫除 $89,200 上方空头流动性', sentiment: 'neutral' }
+      ],
+      detailed_notes: `📌 风控提示：单笔交易建议仓位风险不超过 2%。第一目标位达成后及时将止损上移至开仓保本价。`
+    };
+  } else if (lang === 'es') {
+    return {
+      signal_type,
+      confidence,
+      summary: `Análisis algorítmico completado para ${asset} basado en ${modeTitle} en temporalidad de ${tf}. Se detecta fuerte absorción institucional en el libro de órdenes.`,
+      entry_zone: isBullish ? `$87,420 - $87,950 (Retroceso a FVG y Bloque de Órdenes)` : `$89,800 - $90,200 (Rechazo en Bloque de Oferta)`,
+      targets: [
+        `TP1: $88,600 (+1.2% Objetivo Scalp)`,
+        `TP2: $89,450 (+2.4% Captura de Liquidez)`,
+        `TP3: $90,900 (+4.1% Recorrido Extendido)`
+      ],
+      stop_loss: isBullish ? `$86,850 (Invalidación de estructura bajo mínimo)` : `$90,800 (Ruptura sobre oferta)`,
+      risk_reward: `1 : 2.85`,
+      indicators_breakdown: [
+        { name: 'CVD Delta de Volumen', status: 'Absorción compradora positiva', sentiment: 'bullish' },
+        { name: 'RSI Momentum (14)', status: 'Expansión alcista reiniciada (58.4)', sentiment: 'bullish' },
+        { name: 'Mapa de Liquidez', status: 'Barrido de liquidez sobre $89,200', sentiment: 'neutral' }
+      ],
+      detailed_notes: `📌 Protocolo de Gestión: Riesgo máximo del 1.5% del capital. Mover Stop-Loss a Breakeven inmediatamente tras alcanzar el TP1.`
+    };
+  } else if (lang === 'tr') {
+    return {
+      signal_type,
+      confidence,
+      summary: `${asset} için ${modeTitle} modeli ve ${tf} zaman diliminde algoritmik analiz tamamlandı. Emir defterinde belirgin kurumsal alım emilimi tespit edildi.`,
+      entry_zone: isBullish ? `$87,420 - $87,950 (FVG & Order Block Geri Testi)` : `$89,800 - $90,200 (Arz Bloğu Reddi)`,
+      targets: [
+        `TP1: $88,600 (+%1.2 Scalp Hedefi)`,
+        `TP2: $89,450 (+%2.4 Likidite Koşusu)`,
+        `TP3: $90,900 (+%4.1 Genişletilmiş Trend)`
+      ],
+      stop_loss: isBullish ? `$86,850 (Dip altı yapı bozulması)` : `$90,800 (Arz üzeri ihlal)`,
+      risk_reward: `1 : 2.85`,
+      indicators_breakdown: [
+        { name: 'CVD Hacim Deltası', status: 'Pozitif kurumsal alım emilimi', sentiment: 'bullish' },
+        { name: 'RSI Momentum (14)', status: 'Boğa yönlü ivme (58.4)', sentiment: 'bullish' },
+        { name: 'Likidite Isı Haritası', status: '$89,200 üzerindeki likidite süpürüldü', sentiment: 'neutral' }
+      ],
+      detailed_notes: `📌 Risk Yönetimi: Maksimum %1.5 bakiye riski. TP1 alındığında zararı durdur seviyesini derhal giriş seviyesine (Başa Baş) çekin.`
+    };
   }
 
   return {

@@ -8,7 +8,7 @@ import {
   Zap, 
   CheckCircle2
 } from 'lucide-react';
-import { ToolMode, SupportedLanguage } from '../../types';
+import { ToolMode, SupportedLanguage, SUPPORTED_LANGUAGES } from '../../types';
 import { FieldEditor } from './FieldEditor';
 import { extractPlaceholders } from '../../utils/promptCompiler';
 
@@ -18,6 +18,24 @@ interface ModesManagerProps {
   onSelectMode: (modeId: string) => void;
   onChangeModes: (updatedModes: ToolMode[]) => void;
 }
+
+const titlePlaceholders: Record<SupportedLanguage, string> = {
+  en: 'e.g. Scalp & Rapid Breakout',
+  fa: 'مثال: اسکالپ و شکست سریع',
+  ar: 'مثال: المضاربة السريعة والاختراق',
+  zh: '例如：高频超短线与突破',
+  es: 'ej. Scalping y Ruptura Rápida',
+  tr: 'örn. Scalp ve Hızlı Kırılım',
+};
+
+const descPlaceholders: Record<SupportedLanguage, string> = {
+  en: 'Explain what this mode achieves for the end user...',
+  fa: 'توضیح دهید این حالت چه تحلیلی ارائه می‌دهد تا کاربر متوجه شود...',
+  ar: 'اشرح ما يقدمه هذا الوضع للمستخدم...',
+  zh: '说明该模式的交易逻辑与为用户提供的分析价值...',
+  es: 'Explica qué analiza este modo para el usuario final...',
+  tr: 'Bu modun son kullanıcı için ne sağladığını açıklayın...',
+};
 
 export const ModesManager: React.FC<ModesManagerProps> = ({
   modes,
@@ -44,12 +62,18 @@ export const ModesManager: React.FC<ModesManagerProps> = ({
       title: {
         en: `Mode ${modes.length + 1}: Custom Strategy`,
         fa: `حالت ${modes.length + 1}: استراتژی سفارشی`,
-        ar: `الوضع ${modes.length + 1}: استراتيجية مخصصة`
+        ar: `الوضع ${modes.length + 1}: استراتيجية مخصصة`,
+        zh: `模式 ${modes.length + 1}: 自定义策略`,
+        es: `Modo ${modes.length + 1}: Estrategia Personalizada`,
+        tr: `Mod ${modes.length + 1}: Özel Strateji`
       },
       description: {
         en: `Description for analysis mode ${modes.length + 1}...`,
         fa: `توضیحات کاربردی برای حالت تحلیلی ${modes.length + 1}...`,
-        ar: `وصف تفصيلي لوضع التحليل ${modes.length + 1}...`
+        ar: `وصف تفصيلي لوضع التحليل ${modes.length + 1}...`,
+        zh: `针对分析模式 ${modes.length + 1} 的应用说明...`,
+        es: `Descripción práctica para el modo de análisis ${modes.length + 1}...`,
+        tr: `${modes.length + 1}. analiz modu için pratik açıklama...`
       },
       icon: 'Zap',
       badge_color: 'blue',
@@ -111,9 +135,12 @@ export const ModesManager: React.FC<ModesManagerProps> = ({
       id: newId,
       mode_id: `${currentModeId}_copy`,
       title: {
-        en: `${mode.title.en} (Copy)`,
-        fa: `${mode.title.fa} (کپی)`,
-        ar: mode.title.ar ? `${mode.title.ar} (نسخة)` : ''
+        en: `${mode.title.en || ''} (Copy)`,
+        fa: `${mode.title.fa || ''} (کپی)`,
+        ar: mode.title.ar ? `${mode.title.ar} (نسخة)` : '',
+        zh: mode.title.zh ? `${mode.title.zh} (副本)` : '',
+        es: mode.title.es ? `${mode.title.es} (Copia)` : '',
+        tr: mode.title.tr ? `${mode.title.tr} (Kopya)` : ''
       }
     };
     const updated = [...modes, cloned];
@@ -128,7 +155,7 @@ export const ModesManager: React.FC<ModesManagerProps> = ({
 
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
-    const currentText = activeMode.prompt_template;
+    const currentText = activeMode.prompt_template || '';
     const tag = `{${varKey}}`;
 
     const updatedText = currentText.substring(0, start) + tag + currentText.substring(end);
@@ -143,7 +170,7 @@ export const ModesManager: React.FC<ModesManagerProps> = ({
 
   if (!activeMode) return null;
 
-  const currentPlaceholders = extractPlaceholders(activeMode.prompt_template);
+  const currentPlaceholders = extractPlaceholders(activeMode.prompt_template || '');
   const availableFieldKeys = activeMode.fields.map(f => (f.key || '').trim()).filter(Boolean);
   const allInsertableVariables = Array.from(new Set([...availableFieldKeys, 'language']));
 
@@ -230,24 +257,25 @@ export const ModesManager: React.FC<ModesManagerProps> = ({
           </div>
 
           {/* Language Switcher for Mode Title & Description */}
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <span className="text-[11px] text-gray-400 flex items-center gap-1">
               <Globe className="h-3 w-3 text-gray-500" />
               <span>Editing Language:</span>
             </span>
-            <div className="flex rounded-md bg-[#0d1117] p-0.5 border border-[#1e293b]">
-              {(['en', 'fa', 'ar'] as const).map((lang) => (
+            <div className="flex flex-wrap gap-1 rounded-md bg-[#0d1117] p-1 border border-[#1e293b]">
+              {SUPPORTED_LANGUAGES.map((lang) => (
                 <button
-                  key={lang}
+                  key={lang.code}
                   type="button"
-                  onClick={() => setActiveLangTab(lang)}
-                  className={`rounded px-2.5 py-0.5 text-[11px] font-semibold transition ${
-                    activeLangTab === lang
-                      ? 'bg-blue-600 text-white'
-                      : 'text-gray-400 hover:text-gray-200'
+                  onClick={() => setActiveLangTab(lang.code)}
+                  className={`flex items-center gap-1.5 rounded px-2.5 py-1 text-[11px] font-semibold transition ${
+                    activeLangTab === lang.code
+                      ? 'bg-blue-600 text-white shadow-sm'
+                      : 'text-gray-400 hover:text-gray-200 hover:bg-[#161b22]'
                   }`}
                 >
-                  {lang === 'en' ? '🇬🇧 English' : lang === 'fa' ? '🇮🇷 فارسی' : '🇸🇦 العربية'}
+                  <span className="text-xs">{lang.flag}</span>
+                  <span>{lang.name}</span>
                 </button>
               ))}
             </div>
@@ -270,7 +298,7 @@ export const ModesManager: React.FC<ModesManagerProps> = ({
                   [activeLangTab]: e.target.value
                 }
               })}
-              placeholder={activeLangTab === 'fa' ? 'مثال: اسکالپ و شکست سریع' : 'e.g. Scalp & Rapid Breakout'}
+              placeholder={titlePlaceholders[activeLangTab]}
               className="w-full rounded-md border border-[#1e293b] bg-[#0d1117] px-3 py-2 text-xs text-gray-200 placeholder-gray-600 focus:border-blue-500 focus:outline-none"
             />
           </div>
@@ -306,11 +334,7 @@ export const ModesManager: React.FC<ModesManagerProps> = ({
                 [activeLangTab]: e.target.value
               }
             })}
-            placeholder={
-              activeLangTab === 'fa'
-                ? 'توضیح دهید این حالت چه تحلیلی ارائه می‌دهد تا کاربر متوجه شود...'
-                : 'Explain what this mode achieves for the end user...'
-            }
+            placeholder={descPlaceholders[activeLangTab]}
             className="w-full rounded-md border border-[#1e293b] bg-[#0d1117] px-3 py-2 text-xs text-gray-200 placeholder-gray-600 focus:border-blue-500 focus:outline-none"
           />
         </div>
@@ -324,10 +348,10 @@ export const ModesManager: React.FC<ModesManagerProps> = ({
               </div>
               <div>
                 <label className="text-xs font-bold text-gray-300">
-                  AI Prompt Template (Sent to LLM / n8n) <span className="text-rose-400">*</span>
+                  AI Prompt Template (Sent to LLM / n8n) <span className="text-gray-500 font-normal">(Optional)</span>
                 </label>
                 <p className="text-[11px] text-gray-500">
-                  Click any variable pill below to insert it directly into the prompt text:
+                  Click any variable pill to insert, or leave blank if only raw form inputs should be sent to n8n:
                 </p>
               </div>
             </div>
@@ -368,9 +392,9 @@ export const ModesManager: React.FC<ModesManagerProps> = ({
           <textarea
             ref={promptTextareaRef}
             rows={4}
-            value={activeMode.prompt_template}
+            value={activeMode.prompt_template || ''}
             onChange={(e) => updateActiveMode({ prompt_template: e.target.value })}
-            placeholder="e.g. Act as a quantitative crypto scalper. Analyze {asset} on {timeframe} timeframe. Risk level: {risk_level}..."
+            placeholder="Optional: e.g. Act as a quantitative crypto scalper. Analyze {asset} on {timeframe} timeframe... (Leave blank if you do not need compiled_prompt)"
             className="w-full rounded-md border border-[#1e293b] bg-[#0d1117] p-2.5 font-mono text-xs text-blue-300 placeholder-gray-600 leading-relaxed focus:border-blue-500 focus:outline-none"
           />
 

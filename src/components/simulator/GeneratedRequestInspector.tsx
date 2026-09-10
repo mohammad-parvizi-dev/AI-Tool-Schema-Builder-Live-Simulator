@@ -24,6 +24,73 @@ interface GeneratedRequestInspectorProps {
   activeMode: ToolMode;
 }
 
+const inspectorTexts: Record<string, Record<SupportedLanguage, string>> = {
+  header: {
+    en: 'Generated Request Inspector',
+    fa: 'بازرسی درخواست هوش مصنوعی',
+    ar: 'فاحص طلب الذكاء الاصطناعي',
+    zh: 'AI 智能请求检查器',
+    es: 'Inspector de Solicitud de IA',
+    tr: 'Yapay Zeka İstek Denetleyicisi',
+  },
+  banner: {
+    en: 'Trade Zone Chat Interface Preview — Clean user-facing prompt bubble (raw prompt is never shown to the user).',
+    fa: 'نمای شبیه‌سازی‌شده دقیق پیام کاربر در تاریخچه چت تریدزون (بدون نمایش پرامپت خام به کاربر)',
+    ar: 'المعاينة الدقيقة لرسالة المستخدم في واجهة الدردشة (دون إظهار الأوامر الخام)',
+    zh: 'Trade Zone 聊天界面预览 — 干净的用户前端气泡提示（用户端绝不暴露原始提示词）。',
+    es: 'Vista previa del chat de Trade Zone — Burbuja limpia para el usuario (el prompt crudo nunca se muestra al usuario).',
+    tr: 'Trade Zone Sohbet Önizlemesi — Temiz kullanıcı sohbet balonu (ham prompt son kullanıcıya asla gösterilmez).',
+  },
+  analysisRequest: {
+    en: 'Analysis Request',
+    fa: 'درخواست تحلیل هوشمند',
+    ar: 'طلب التحليل الذكي',
+    zh: '智能分析请求',
+    es: 'Solicitud de Análisis',
+    tr: 'Akıllı Analiz Talebi',
+  },
+  signalConfluence: {
+    en: 'Algorithmic Signal Confluence',
+    fa: 'سیگنال تایید شده الگوریتمی',
+    ar: 'إشارة مؤكدة خوارزمياً',
+    zh: '算法验证交易共振',
+    es: 'Confluencia de Señal Algorítmica',
+    tr: 'Algoritmik Sinyal Onayı',
+  },
+  entryZone: {
+    en: 'Entry Zone',
+    fa: 'نقطه ورود (Entry Zone)',
+    ar: 'نقطة الدخول',
+    zh: '入场区间 (Entry Zone)',
+    es: 'Zona de Entrada',
+    tr: 'Giriş Bölgesi (Entry Zone)',
+  },
+  targets: {
+    en: 'Take Profit Targets',
+    fa: 'تارگت‌ها (Take Profits)',
+    ar: 'الأهداف الربحية',
+    zh: '止盈目标 (Take Profits)',
+    es: 'Objetivos de Ganancia',
+    tr: 'Kâr Alma Hedefleri (TP)',
+  },
+  stopLoss: {
+    en: 'Stop-Loss',
+    fa: 'حد ضرر (Stop Loss)',
+    ar: 'وقف الخسارة',
+    zh: '止损位 (Stop Loss)',
+    es: 'Stop-Loss',
+    tr: 'Zarar Kes (Stop-Loss)',
+  },
+  confluences: {
+    en: 'Confluence Breakdown',
+    fa: 'واگرایی‌ها و تایید اندیکاتورها',
+    ar: 'تأكيدات المؤشرات الفنية',
+    zh: '技术指标共振细分',
+    es: 'Desglose de Confluencias',
+    tr: 'Teknik Gösterge Kırılımı',
+  },
+};
+
 export const GeneratedRequestInspector: React.FC<GeneratedRequestInspectorProps> = ({
   result,
   simLanguage,
@@ -36,7 +103,7 @@ export const GeneratedRequestInspector: React.FC<GeneratedRequestInspectorProps>
   const isRtl = simLanguage === 'fa' || simLanguage === 'ar';
 
   const handleCopyPrompt = () => {
-    navigator.clipboard.writeText(result.compiled_prompt);
+    navigator.clipboard.writeText(result.compiled_prompt || '');
     setCopiedPrompt(true);
     setTimeout(() => setCopiedPrompt(false), 2000);
   };
@@ -98,7 +165,7 @@ export const GeneratedRequestInspector: React.FC<GeneratedRequestInspectorProps>
           </div>
           <div>
             <h3 className="text-xs font-bold uppercase tracking-wider text-gray-200 flex items-center gap-2">
-              <span>{simLanguage === 'fa' ? 'بازرسی درخواست هوش مصنوعی' : simLanguage === 'ar' ? 'فاحص طلب الذكاء الاصطناعي' : 'Generated Request Inspector'}</span>
+              <span>{inspectorTexts.header[simLanguage] || 'Generated Request Inspector'}</span>
               <span className="font-mono text-[10px] text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-500/30">
                 LIVE DUAL-OUTPUT
               </span>
@@ -146,11 +213,7 @@ export const GeneratedRequestInspector: React.FC<GeneratedRequestInspectorProps>
             <span className="flex items-center gap-1.5">
               <Sparkles className="h-3.5 w-3.5 text-amber-400 shrink-0" />
               <span>
-                {simLanguage === 'fa'
-                  ? 'نمای شبیه‌سازی‌شده دقیق پیام کاربر در تاریخچه چت تریدزون (بدون نمایش پرامپت خام به کاربر)'
-                  : simLanguage === 'ar'
-                  ? 'المعاينة الدقيقة لرسالة المستخدم في واجهة الدردشة (دون إظهار الأوامر الخام)'
-                  : 'Trade Zone Chat Interface Preview — Clean user-facing prompt bubble (raw prompt is never shown to the user).'}
+                {inspectorTexts.banner[simLanguage] || 'Trade Zone Chat Interface Preview — Clean user-facing prompt bubble (raw prompt is never shown to the user).'}
               </span>
             </span>
             <span className="font-mono text-[10px] text-blue-400 bg-blue-950/40 px-2 py-0.5 rounded">
@@ -168,7 +231,7 @@ export const GeneratedRequestInspector: React.FC<GeneratedRequestInspectorProps>
                     U
                   </div>
                   <span className="text-xs font-bold text-blue-100">
-                    {simLanguage === 'fa' ? 'درخواست تحلیل هوشمند' : simLanguage === 'ar' ? 'طلب التحليل الذكي' : 'Analysis Request'}:
+                    {inspectorTexts.analysisRequest[simLanguage] || 'Analysis Request'}:
                   </span>
                 </div>
                 <span className="rounded-full bg-white/20 px-2.5 py-0.5 text-[11px] font-black tracking-wide text-white backdrop-blur-sm">
@@ -220,7 +283,7 @@ export const GeneratedRequestInspector: React.FC<GeneratedRequestInspectorProps>
                     </span>
                   </div>
                   <span className="text-[10px] text-gray-400">
-                    {simLanguage === 'fa' ? 'سیگنال تایید شده الگوریتمی' : simLanguage === 'ar' ? 'إشارة مؤكدة خوارزمياً' : 'Algorithmic Signal Confluence'}
+                    {inspectorTexts.signalConfluence[simLanguage] || 'Algorithmic Signal Confluence'}
                   </span>
                 </div>
               </div>
@@ -240,7 +303,7 @@ export const GeneratedRequestInspector: React.FC<GeneratedRequestInspectorProps>
             <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
               <div className="rounded-lg bg-[#0d1117] p-2.5 border border-[#1e293b]">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
-                  {simLanguage === 'fa' ? 'نقطه ورود (Entry Zone)' : simLanguage === 'ar' ? 'نقطة الدخول' : 'Entry Zone'}
+                  {inspectorTexts.entryZone[simLanguage] || 'Entry Zone'}
                 </span>
                 <div className="mt-0.5 text-xs font-mono font-bold text-white">
                   {result.ai_mock_response.entry_zone}
@@ -249,7 +312,7 @@ export const GeneratedRequestInspector: React.FC<GeneratedRequestInspectorProps>
 
               <div className="rounded-lg bg-[#0d1117] p-2.5 border border-[#1e293b]">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">
-                  {simLanguage === 'fa' ? 'تارگت‌ها (Take Profits)' : simLanguage === 'ar' ? 'الأهداف' : 'Take Profit Targets'}
+                  {inspectorTexts.targets[simLanguage] || 'Take Profit Targets'}
                 </span>
                 <div className="mt-0.5 space-y-0.5 text-[11px] font-mono font-semibold text-emerald-300">
                   {result.ai_mock_response.targets.map((tp, idx) => (
@@ -261,7 +324,7 @@ export const GeneratedRequestInspector: React.FC<GeneratedRequestInspectorProps>
               <div className="rounded-lg bg-[#0d1117] p-2.5 border border-[#1e293b]">
                 <div className="flex justify-between">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-rose-400">
-                    {simLanguage === 'fa' ? 'حد ضرر (Stop Loss)' : simLanguage === 'ar' ? 'وقف الخسارة' : 'Stop-Loss'}
+                    {inspectorTexts.stopLoss[simLanguage] || 'Stop-Loss'}
                   </span>
                   <span className="text-[10px] font-mono text-blue-400">
                     R:R {result.ai_mock_response.risk_reward}
@@ -276,7 +339,7 @@ export const GeneratedRequestInspector: React.FC<GeneratedRequestInspectorProps>
             {/* Indicator Confluence Badges */}
             <div className="rounded-lg bg-[#0d1117] p-2.5 border border-[#1e293b] space-y-1.5">
               <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
-                {simLanguage === 'fa' ? 'واگرایی‌ها و تایید اندیکاتورها' : simLanguage === 'ar' ? 'تأكيدات المؤشرات الفنية' : 'Confluence Breakdown'}
+                {inspectorTexts.confluences[simLanguage] || 'Confluence Breakdown'}
               </div>
               <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-3">
                 {result.ai_mock_response.indicators_breakdown.map((ind, i) => (
@@ -328,7 +391,7 @@ export const GeneratedRequestInspector: React.FC<GeneratedRequestInspectorProps>
                   Compiled AI Prompt
                 </span>
                 <span className="text-[10px] font-mono text-gray-400 bg-[#0d1117] px-2 py-0.5 rounded border border-[#1e293b]">
-                  {result.compiled_prompt.length} chars
+                  {(result.compiled_prompt || '').length} chars
                 </span>
               </div>
               <button
@@ -351,7 +414,13 @@ export const GeneratedRequestInspector: React.FC<GeneratedRequestInspectorProps>
               </button>
             </div>
             <pre className="max-h-48 overflow-y-auto whitespace-pre-wrap rounded-md bg-[#0d1117] p-3 font-mono text-xs leading-relaxed text-emerald-300 border border-[#1e293b]">
-              {result.compiled_prompt}
+              {result.compiled_prompt ? (
+                result.compiled_prompt
+              ) : (
+                <span className="text-gray-500 italic">
+                  "" (Empty compiled_prompt — raw field inputs will be transmitted directly to n8n)
+                </span>
+              )}
             </pre>
           </div>
 

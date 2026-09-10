@@ -25,29 +25,23 @@ export function validateSchema(schema: RootToolSchema): ValidationError[] {
       });
     }
 
-    if (!mode.prompt_template || mode.prompt_template.trim() === '') {
-      errors.push({
-        path: `${modePath}.prompt_template`,
-        message: `${modeName}: Prompt template is required`,
-        type: 'error'
+    // Prompt template is optional: if provided, check placeholder variables
+    if (mode.prompt_template && mode.prompt_template.trim() !== '') {
+      const placeholders = extractPlaceholders(mode.prompt_template);
+      const fieldKeys = new Set((mode.fields || []).map(f => (f.key || '').trim()));
+      // built-in keys
+      const validKeys = new Set([...Array.from(fieldKeys), 'language']);
+
+      placeholders.forEach(placeholder => {
+        if (!validKeys.has(placeholder)) {
+          errors.push({
+            path: `${modePath}.prompt_template.${placeholder}`,
+            message: `${modeName}: Placeholder {${placeholder}} in prompt template is not defined in any field key`,
+            type: 'warning'
+          });
+        }
       });
     }
-
-    // Check placeholder variables in prompt template
-    const placeholders = extractPlaceholders(mode.prompt_template || '');
-    const fieldKeys = new Set((mode.fields || []).map(f => (f.key || '').trim()));
-    // built-in keys
-    const validKeys = new Set([...Array.from(fieldKeys), 'language']);
-
-    placeholders.forEach(placeholder => {
-      if (!validKeys.has(placeholder)) {
-        errors.push({
-          path: `${modePath}.prompt_template.${placeholder}`,
-          message: `${modeName}: Placeholder {${placeholder}} in prompt template is not defined in any field key`,
-          type: 'warning'
-        });
-      }
-    });
 
     // Check duplicate field keys strictly per mode
     const seenKeysInThisMode = new Set<string>();
