@@ -22,6 +22,7 @@ import {
   N8nWebhookPayload
 } from '../../types';
 import { compileTemplate, generateMockAiResponse } from '../../utils/promptCompiler';
+import { sanitizeInputsForPayload } from '../../utils/valueCasting';
 import { GeneratedRequestInspector } from './GeneratedRequestInspector';
 
 const uiTranslations: Record<string, Record<SupportedLanguage, string>> = {
@@ -170,15 +171,18 @@ export const LiveSimulator: React.FC<LiveSimulatorProps> = ({
       const summary = compileTemplate(summaryTemplate, formValues, simLanguage);
       const mockAi = generateMockAiResponse(modeTitle, formValues, simLanguage);
 
+      const sanitizedInputs = sanitizeInputsForPayload(
+        formValues,
+        activeMode.fields || [],
+        simLanguage
+      );
+
       const n8nPayload: N8nWebhookPayload = {
         mode_id: activeMode.mode_id || activeMode.id,
         display_title: modeTitle,
         display_summary: summary || modeTitle,
         compiled_prompt: compiled || '',
-        inputs: {
-          ...formValues,
-          language: simLanguage
-        }
+        inputs: sanitizedInputs
       };
 
       setSimulationResult({
@@ -186,7 +190,7 @@ export const LiveSimulator: React.FC<LiveSimulatorProps> = ({
         mode_id: activeMode.mode_id || activeMode.id,
         mode_title: modeTitle,
         display_summary: summary,
-        form_values: formValues,
+        form_values: sanitizedInputs,
         compiled_prompt: compiled,
         language: simLanguage,
         n8n_payload: n8nPayload,
@@ -438,6 +442,11 @@ export const LiveSimulator: React.FC<LiveSimulatorProps> = ({
                           {value}{field.slider_config?.unit || ''}
                         </span>
                       )}
+                      {field.type === 'number' && field.number_config?.unit && (
+                        <span className="font-mono text-[10px] font-bold text-cyan-400 bg-cyan-950/60 px-1.5 py-0.5 rounded border border-cyan-500/30">
+                          {field.number_config.unit}
+                        </span>
+                      )}
                     </div>
 
                     {/* RENDER FIELD TYPE: search_select */}
@@ -607,6 +616,30 @@ export const LiveSimulator: React.FC<LiveSimulatorProps> = ({
                             }`}
                           />
                         </button>
+                      </div>
+                    )}
+
+                    {/* RENDER FIELD TYPE: number */}
+                    {field.type === 'number' && (
+                      <div className="relative flex items-center">
+                        <input
+                          type="number"
+                          value={value !== undefined && value !== null ? value : ''}
+                          min={field.number_config?.min}
+                          max={field.number_config?.max}
+                          step={field.number_config?.step || 'any'}
+                          onChange={(e) => {
+                            const raw = e.target.value;
+                            handleInputChange(field.key, raw === '' ? '' : Number(raw));
+                          }}
+                          placeholder={placeholder || '0'}
+                          className="w-full rounded-md border border-[#1e293b] bg-[#0d1117] px-3 py-2 text-xs font-mono text-cyan-300 placeholder-gray-600 focus:border-cyan-500 focus:outline-none"
+                        />
+                        {field.number_config?.unit && (
+                          <span className={`absolute ${isRtl ? 'left-3' : 'right-3'} pointer-events-none text-xs font-mono text-gray-500`}>
+                            {field.number_config.unit}
+                          </span>
+                        )}
                       </div>
                     )}
 

@@ -76,10 +76,12 @@ function normalizeParsedSchema(parsed: any): RootToolSchema | null {
             label: f.label || fieldKey,
             type: f.type || 'text',
             required: Boolean(f.required),
+            value_type: f.value_type || 'auto',
             description: f.description || '',
             default_value: f.default_value !== undefined ? f.default_value : '',
             placeholder: f.placeholder || '',
             slider_config: f.slider_config,
+            number_config: f.number_config,
             options: Array.isArray(f.options)
               ? f.options.map((o: any, oIdx: number) => ({
                   id: o.id || `opt_${fieldKey}_${oIdx}`,
@@ -126,10 +128,12 @@ function toCleanExportObject(schema: RootToolSchema): ExportedRootSchema {
           type: f.type,
           required: Boolean(f.required)
         };
+        if (f.value_type && f.value_type !== 'auto') cleanField.value_type = f.value_type;
         if (f.description) cleanField.description = f.description;
         if (f.default_value !== undefined && f.default_value !== '') cleanField.default_value = f.default_value;
         if (f.placeholder) cleanField.placeholder = f.placeholder;
         if (f.type === 'range_slider' && f.slider_config) cleanField.slider_config = f.slider_config;
+        if (f.type === 'number' && f.number_config) cleanField.number_config = f.number_config;
         if (f.options && f.options.length > 0) {
           cleanField.options = f.options.map(o => {
             const cleanOpt: any = {

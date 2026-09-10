@@ -22,9 +22,12 @@ export type FieldType =
   | 'pills'
   | 'select'
   | 'range_slider'
+  | 'number'
   | 'switch'
   | 'text'
   | 'textarea';
+
+export type ValueType = 'auto' | 'number' | 'string' | 'boolean';
 
 export interface LocalizedString {
   en: string;
@@ -54,17 +57,26 @@ export interface SliderConfig {
   max_label?: string;
 }
 
+export interface NumberConfig {
+  min?: number;
+  max?: number;
+  step?: number;
+  unit?: string;
+}
+
 export interface SchemaField {
   id: string;
   key: string;
   label: string;
   description?: string;
   type: FieldType;
+  value_type?: ValueType;
   required: boolean;
   default_value: any;
   placeholder?: string;
   options?: FieldOption[];
   slider_config?: SliderConfig;
+  number_config?: NumberConfig;
 }
 
 export interface ToolMode {
@@ -106,6 +118,8 @@ export interface ExportedToolMode {
       badge?: string;
     }>;
     slider_config?: SliderConfig;
+    number_config?: NumberConfig;
+    value_type?: ValueType;
   }>;
 }
 
@@ -124,6 +138,13 @@ export interface PresetItem {
 }
 
 export type CustomPreset = PresetItem;
+
+export interface ActivePresetMeta {
+  id?: string;
+  name: string;
+  isCustom: boolean;
+  updated_at?: string;
+}
 
 export interface PresetsBackup {
   version: string;

@@ -13,9 +13,10 @@ import {
   AlignLeft, 
   Tag, 
   AlertCircle,
-  Layers
+  Layers,
+  Hash
 } from 'lucide-react';
-import { SchemaField, FieldType, FieldOption } from '../../types';
+import { SchemaField, FieldType, FieldOption, ValueType } from '../../types';
 
 interface FieldEditorProps {
   fields: SchemaField[];
@@ -32,6 +33,7 @@ export const FieldEditor: React.FC<FieldEditorProps> = ({ fields, onChange }) =>
       key: `field_${fields.length + 1}`,
       label: `New Field ${fields.length + 1}`,
       type: presetType || 'select',
+      value_type: 'auto',
       required: true,
       default_value: '',
     };
@@ -40,6 +42,7 @@ export const FieldEditor: React.FC<FieldEditorProps> = ({ fields, onChange }) =>
       newField.key = 'risk_level';
       newField.label = 'Risk Level';
       newField.default_value = 5;
+      newField.value_type = 'number';
       newField.slider_config = {
         min: 1,
         max: 10,
@@ -47,6 +50,17 @@ export const FieldEditor: React.FC<FieldEditorProps> = ({ fields, onChange }) =>
         unit: '/10',
         min_label: 'Low',
         max_label: 'High'
+      };
+    } else if (presetType === 'number') {
+      newField.key = 'limit';
+      newField.label = 'Candles Limit';
+      newField.default_value = 250;
+      newField.value_type = 'number';
+      newField.number_config = {
+        min: 1,
+        max: 1000,
+        step: 1,
+        unit: 'candles'
       };
     } else if (presetType === 'pills') {
       newField.key = 'timeframe';
@@ -149,6 +163,7 @@ export const FieldEditor: React.FC<FieldEditorProps> = ({ fields, onChange }) =>
       case 'pills': return <Tag className="h-3.5 w-3.5 text-blue-400" />;
       case 'select': return <List className="h-3.5 w-3.5 text-indigo-400" />;
       case 'range_slider': return <Sliders className="h-3.5 w-3.5 text-amber-400" />;
+      case 'number': return <Hash className="h-3.5 w-3.5 text-cyan-400" />;
       case 'switch': return <ToggleLeft className="h-3.5 w-3.5 text-emerald-400" />;
       case 'text': return <Type className="h-3.5 w-3.5 text-purple-400" />;
       case 'textarea': return <AlignLeft className="h-3.5 w-3.5 text-pink-400" />;
@@ -190,6 +205,14 @@ export const FieldEditor: React.FC<FieldEditorProps> = ({ fields, onChange }) =>
           >
             <Tag className="h-3 w-3 text-blue-400" />
             <span>+ Pills (TF)</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => addField('number')}
+            className="flex items-center gap-1 rounded-md bg-[#1e293b] hover:bg-[#2d3748] px-2.5 py-1 text-[11px] font-medium text-gray-200 border border-[#334155] transition-colors"
+          >
+            <Hash className="h-3 w-3 text-cyan-400" />
+            <span>+ Number</span>
           </button>
           <button
             type="button"
@@ -257,6 +280,11 @@ export const FieldEditor: React.FC<FieldEditorProps> = ({ fields, onChange }) =>
                     <span className="text-xs text-gray-400">
                       • {field.label || 'Untitled'}
                     </span>
+                    {field.value_type && field.value_type !== 'auto' && (
+                      <span className="rounded bg-cyan-950/60 px-1.5 py-0.5 text-[9px] font-mono font-semibold text-cyan-400 border border-cyan-500/30">
+                        {field.value_type}
+                      </span>
+                    )}
                     {field.required && (
                       <span className="rounded bg-rose-950/60 px-1.5 py-0.5 text-[10px] font-semibold text-rose-400 border border-rose-500/30">
                         Required
@@ -303,7 +331,7 @@ export const FieldEditor: React.FC<FieldEditorProps> = ({ fields, onChange }) =>
                 {/* Expanded Field Editor Form */}
                 {isExpanded && (
                   <div className="border-t border-[#1e293b] p-4 space-y-4 bg-[#161b22] rounded-b-lg">
-                    {/* Row 1: Variable Key, Field Label, Field Type, Required */}
+                    {/* Row 1: Variable Key, Field Label, Field Type, JSON Output Type */}
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-4">
                       <div className="space-y-1">
                         <label className="block text-[11px] font-semibold text-gray-300">
@@ -320,7 +348,7 @@ export const FieldEditor: React.FC<FieldEditorProps> = ({ fields, onChange }) =>
                         />
                       </div>
 
-                      <div className="sm:col-span-2 space-y-1">
+                      <div className="space-y-1">
                         <label className="block text-[11px] font-semibold text-gray-300">
                           Field Label <span className="text-rose-400">*</span>
                         </label>
@@ -335,7 +363,7 @@ export const FieldEditor: React.FC<FieldEditorProps> = ({ fields, onChange }) =>
 
                       <div className="space-y-1">
                         <label className="block text-[11px] font-semibold text-gray-300">
-                          Field Type
+                          UI Component
                         </label>
                         <select
                           value={field.type}
@@ -345,6 +373,12 @@ export const FieldEditor: React.FC<FieldEditorProps> = ({ fields, onChange }) =>
                             if (newType === 'range_slider' && !field.slider_config) {
                               updates.slider_config = { min: 1, max: 10, step: 1, unit: '/10' };
                               updates.default_value = 5;
+                              updates.value_type = 'number';
+                            }
+                            if (newType === 'number' && !field.number_config) {
+                              updates.number_config = { min: 1, step: 1 };
+                              updates.default_value = typeof field.default_value === 'number' ? field.default_value : 100;
+                              updates.value_type = 'number';
                             }
                             if (['select', 'pills', 'search_select'].includes(newType) && (!field.options || field.options.length === 0)) {
                               updates.options = [
@@ -355,6 +389,7 @@ export const FieldEditor: React.FC<FieldEditorProps> = ({ fields, onChange }) =>
                             }
                             if (newType === 'switch') {
                               updates.default_value = true;
+                              updates.value_type = 'boolean';
                             }
                             updateField(field.id, updates);
                           }}
@@ -363,10 +398,30 @@ export const FieldEditor: React.FC<FieldEditorProps> = ({ fields, onChange }) =>
                           <option value="search_select">🔍 Search Select (Asset / Icon)</option>
                           <option value="pills">🏷️ Pills (Horizontal Buttons)</option>
                           <option value="select">📋 Standard Select Dropdown</option>
+                          <option value="number">🔢 Number Input (Integer / Float)</option>
                           <option value="range_slider">🎚️ Range Slider (Min / Max / Step)</option>
                           <option value="switch">🔘 Boolean Switch (Toggle)</option>
                           <option value="text">✏️ Text (Single line)</option>
                           <option value="textarea">📝 Textarea (Multi-line)</option>
+                        </select>
+                      </div>
+
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between">
+                          <label className="block text-[11px] font-semibold text-gray-300">
+                            JSON Data Type
+                          </label>
+                          <span className="text-[9px] text-gray-500 font-mono">n8n type</span>
+                        </div>
+                        <select
+                          value={field.value_type || 'auto'}
+                          onChange={(e) => updateField(field.id, { value_type: e.target.value as ValueType })}
+                          className="w-full rounded-md border border-[#1e293b] bg-[#0d1117] px-3 py-1.5 text-xs font-mono text-cyan-300 focus:border-cyan-500 focus:outline-none"
+                        >
+                          <option value="auto">⚡ Auto (Smart: "250" → 250)</option>
+                          <option value="number">🔢 Number (Pure number)</option>
+                          <option value="string">🔤 String (Text only)</option>
+                          <option value="boolean">🔘 Boolean (true/false)</option>
                         </select>
                       </div>
                     </div>
@@ -397,7 +452,17 @@ export const FieldEditor: React.FC<FieldEditorProps> = ({ fields, onChange }) =>
                             type="number"
                             value={field.default_value ?? 0}
                             onChange={(e) => updateField(field.id, { default_value: Number(e.target.value) })}
-                            className="w-full rounded-md border border-[#1e293b] bg-[#0d1117] px-3 py-1.5 text-xs text-white focus:border-blue-500 focus:outline-none"
+                            className="w-full rounded-md border border-[#1e293b] bg-[#0d1117] px-3 py-1.5 text-xs text-white focus:border-blue-500 focus:outline-none font-mono"
+                          />
+                        ) : field.type === 'number' ? (
+                          <input
+                            type="number"
+                            value={field.default_value ?? ''}
+                            onChange={(e) => updateField(field.id, { 
+                              default_value: e.target.value === '' ? '' : Number(e.target.value) 
+                            })}
+                            placeholder="e.g. 250"
+                            className="w-full rounded-md border border-[#1e293b] bg-[#0d1117] px-3 py-1.5 text-xs text-cyan-300 focus:border-cyan-500 focus:outline-none font-mono"
                           />
                         ) : (
                           <input
@@ -498,6 +563,78 @@ export const FieldEditor: React.FC<FieldEditorProps> = ({ fields, onChange }) =>
                                 }
                               })}
                               placeholder="e.g. %, /10, pips"
+                              className="w-full rounded border border-[#1e293b] bg-[#161b22] px-2 py-1 text-xs text-white"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Specific Config: Number Input */}
+                    {field.type === 'number' && (
+                      <div className="rounded-md border border-[#1e293b] bg-[#0d1117] p-3">
+                        <div className="mb-2 text-xs font-bold text-cyan-400 flex items-center gap-1.5">
+                          <Hash className="h-3.5 w-3.5" />
+                          <span>Number Input Parameters</span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                          <div>
+                            <label className="text-[10px] text-gray-400">Min</label>
+                            <input
+                              type="number"
+                              value={field.number_config?.min ?? ''}
+                              onChange={(e) => updateField(field.id, {
+                                number_config: {
+                                  ...field.number_config,
+                                  min: e.target.value === '' ? undefined : Number(e.target.value)
+                                }
+                              })}
+                              placeholder="Optional"
+                              className="w-full rounded border border-[#1e293b] bg-[#161b22] px-2 py-1 text-xs text-white"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[10px] text-gray-400">Max</label>
+                            <input
+                              type="number"
+                              value={field.number_config?.max ?? ''}
+                              onChange={(e) => updateField(field.id, {
+                                number_config: {
+                                  ...field.number_config,
+                                  max: e.target.value === '' ? undefined : Number(e.target.value)
+                                }
+                              })}
+                              placeholder="Optional"
+                              className="w-full rounded border border-[#1e293b] bg-[#161b22] px-2 py-1 text-xs text-white"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[10px] text-gray-400">Step</label>
+                            <input
+                              type="number"
+                              value={field.number_config?.step ?? ''}
+                              onChange={(e) => updateField(field.id, {
+                                number_config: {
+                                  ...field.number_config,
+                                  step: e.target.value === '' ? undefined : Number(e.target.value)
+                                }
+                              })}
+                              placeholder="1, 0.1, etc."
+                              className="w-full rounded border border-[#1e293b] bg-[#161b22] px-2 py-1 text-xs text-white"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[10px] text-gray-400">Unit / Suffix</label>
+                            <input
+                              type="text"
+                              value={field.number_config?.unit ?? ''}
+                              onChange={(e) => updateField(field.id, {
+                                number_config: {
+                                  ...field.number_config,
+                                  unit: e.target.value
+                                }
+                              })}
+                              placeholder="e.g. USDT, candles, x"
                               className="w-full rounded border border-[#1e293b] bg-[#161b22] px-2 py-1 text-xs text-white"
                             />
                           </div>

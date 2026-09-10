@@ -5,13 +5,14 @@ import { LiveSimulator } from './components/simulator/LiveSimulator';
 import { JsonViewer } from './components/json/JsonViewer';
 import { PresetsBackupModal } from './components/modals/PresetsBackupModal';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import { RootToolSchema, CustomPreset, ToolMode } from './types';
+import { RootToolSchema, CustomPreset, ToolMode, ActivePresetMeta } from './types';
 import { defaultBuiltinPresets, blankSchemaPreset } from './data/presets';
 import { validateSchema } from './utils/validation';
 import { CheckCircle2, Info } from 'lucide-react';
 
 const STORAGE_ACTIVE_SCHEMA_KEY = 'trade_zone_active_schema_v2';
 const STORAGE_CUSTOM_PRESETS_KEY = 'trade_zone_custom_presets_v2';
+const STORAGE_ACTIVE_PRESET_META_KEY = 'trade_zone_active_preset_meta_v2';
 
 export default function App() {
   // Load initial active schema from LocalStorage or default to built-in cryptoSignalBot
@@ -45,6 +46,34 @@ export default function App() {
     }
     return [];
   });
+
+  // Track the active preset metadata (ID, name, and custom flag)
+  const [activePresetMeta, setActivePresetMeta] = useState<ActivePresetMeta>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_ACTIVE_PRESET_META_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && typeof parsed.name === 'string') {
+          return parsed;
+        }
+      }
+    } catch (e) {
+      console.error('Failed to load active preset meta', e);
+    }
+    return {
+      id: defaultBuiltinPresets[0].id,
+      name: defaultBuiltinPresets[0].name,
+      isCustom: false
+    };
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_ACTIVE_PRESET_META_KEY, JSON.stringify(activePresetMeta));
+    } catch (e) {
+      console.error('Failed to persist active preset meta', e);
+    }
+  }, [activePresetMeta]);
 
   const [activeModeId, setActiveModeId] = useState<string>(() => {
     return schema.modes?.[0]?.id || 'mode_scalp_breakout';
@@ -95,28 +124,91 @@ export default function App() {
     });
   };
 
-  const handleLoadPreset = (presetSchema: RootToolSchema, presetName?: string) => {
+  const handleLoadPreset = (presetSchema: RootToolSchema, presetName?: string, presetId?: string, isCustom = false) => {
     const clone: RootToolSchema = JSON.parse(JSON.stringify(presetSchema));
     setSchema(clone);
     if (clone.modes?.[0]) {
       setActiveModeId(clone.modes[0].id);
     }
-    showToast(`Loaded preset: ${presetName || 'Selected Schema'}`);
+    const name = presetName || 'Selected Schema';
+    setActivePresetMeta({
+      id: presetId,
+      name,
+      isCustom
+    });
+    showToast(`Loaded preset: ${name}`);
   };
 
-  const handleSaveCustomPreset = (name: string) => {
+  const handleUpdateCustomPreset = (presetId: string, newName?: string) => {
+    const now = new Date().toISOString();
+    let updatedTitle = '';
+
+    setCustomPresets((prev) => {
+      const exists = prev.some((p) => p.id === presetId);
+      if (exists) {
+        return prev.map((p) => {
+          if (p.id === presetId) {
+            updatedTitle = newName && newName.trim() ? newName.trim() : p.name;
+            return {
+              ...p,
+              name: updatedTitle,
+              updated_at: now,
+              schema: JSON.parse(JSON.stringify(schema))
+            };
+          }
+          return p;
+        });
+      } else {
+        // Fallback: If not found, save as new
+        updatedTitle = newName && newName.trim() ? newName.trim() : 'Custom Preset';
+        const newPreset: CustomPreset = {
+          id: presetId,
+          name: updatedTitle,
+          created_at: now,
+          updated_at: now,
+          schema: JSON.parse(JSON.stringify(schema))
+        };
+        return [newPreset, ...prev];
+      }
+    });
+
+    setActivePresetMeta({
+      id: presetId,
+      name: updatedTitle || activePresetMeta.name,
+      isCustom: true,
+      updated_at: now
+    });
+
+    showToast(`Saved changes to "${updatedTitle || activePresetMeta.name}"!`);
+  };
+
+  const handleSaveNewCustomPreset = (name: string) => {
+    const now = new Date().toISOString();
     const newPreset: CustomPreset = {
       id: `custom_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-      name,
-      created_at: new Date().toISOString(),
+      name: name.trim(),
+      created_at: now,
+      updated_at: now,
       schema: JSON.parse(JSON.stringify(schema))
     };
     setCustomPresets((prev) => [newPreset, ...prev]);
-    showToast(`Custom preset "${name}" saved to LocalStorage!`);
+    setActivePresetMeta({
+      id: newPreset.id,
+      name: newPreset.name,
+      isCustom: true,
+      updated_at: now
+    });
+    showToast(`Saved new preset "${newPreset.name}" to LocalStorage!`);
   };
 
   const handleDeleteCustomPreset = (id: string) => {
     setCustomPresets((prev) => prev.filter((p) => p.id !== id));
+    if (activePresetMeta.id === id) {
+      setActivePresetMeta({
+        name: 'Untitled Schema',
+        isCustom: false
+      });
+    }
     showToast('Custom preset deleted.');
   };
 
@@ -126,6 +218,11 @@ export default function App() {
     if (fresh.modes[0]) {
       setActiveModeId(fresh.modes[0].id);
     }
+    setActivePresetMeta({
+      id: 'blank',
+      name: 'Blank Template',
+      isCustom: false
+    });
     showToast('Reset to blank schema template.');
   };
 
@@ -150,7 +247,7 @@ export default function App() {
 
     // Automatically load the first imported preset into workspace if available
     if (importedPresets[0]?.schema) {
-      handleLoadPreset(importedPresets[0].schema, importedPresets[0].name);
+      handleLoadPreset(importedPresets[0].schema, importedPresets[0].name, importedPresets[0].id, true);
     }
   };
 
@@ -161,8 +258,10 @@ export default function App() {
         schema={schema}
         validationErrors={validationErrors}
         customPresets={customPresets}
+        activePresetMeta={activePresetMeta}
         onLoadPreset={handleLoadPreset}
-        onSaveCustomPreset={handleSaveCustomPreset}
+        onUpdateCustomPreset={handleUpdateCustomPreset}
+        onSaveNewCustomPreset={handleSaveNewCustomPreset}
         onDeleteCustomPreset={handleDeleteCustomPreset}
         onReset={handleReset}
         onOpenImportPresets={handleOpenImportPresets}
