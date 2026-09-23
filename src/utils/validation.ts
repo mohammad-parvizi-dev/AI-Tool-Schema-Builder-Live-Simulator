@@ -15,12 +15,27 @@ export function validateSchema(schema: RootToolSchema): ValidationError[] {
 
   schema.modes.forEach((mode, mIdx) => {
     const modePath = `modes[${mIdx}]`;
-    const modeName = mode.title?.en || mode.title?.fa || `Mode ${mIdx + 1}`;
+    const rawTitle: any = mode.title;
+    const modeName = 
+      (typeof rawTitle === 'string' ? rawTitle : (
+        rawTitle?.en || rawTitle?.fa || rawTitle?.ar || rawTitle?.zh || rawTitle?.es || rawTitle?.tr
+      )) || `Mode ${mIdx + 1}`;
 
-    if (!mode.title?.en?.trim() && !mode.title?.fa?.trim()) {
+    const hasTitle = typeof rawTitle === 'string' 
+      ? Boolean(rawTitle.trim())
+      : Boolean(
+          rawTitle?.en?.trim() || 
+          rawTitle?.fa?.trim() || 
+          rawTitle?.ar?.trim() || 
+          rawTitle?.zh?.trim() || 
+          rawTitle?.es?.trim() || 
+          rawTitle?.tr?.trim()
+        );
+
+    if (!hasTitle) {
       errors.push({
         path: `${modePath}.title`,
-        message: `${modeName}: English or Persian title is required`,
+        message: `${modeName}: At least one language title (e.g. English, Persian, Chinese, Spanish, etc.) is required`,
         type: 'error'
       });
     }

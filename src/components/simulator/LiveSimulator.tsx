@@ -127,8 +127,15 @@ export const LiveSimulator: React.FC<LiveSimulatorProps> = ({
   const activeMode: ToolMode = (schema.modes || []).find(m => m.id === activeModeId) || (schema.modes || [])[0] || {
     id: 'default',
     mode_id: 'default',
-    title: { en: 'Default Strategy', fa: 'استراتژی پیش‌فرض', ar: 'الاستراتيجية الافتراضية' },
-    description: { en: '', fa: '', ar: '' },
+    title: { 
+      en: 'Default Strategy', 
+      fa: 'استراتژی پیش‌فرض', 
+      ar: 'الاستراتيجية الافتراضية',
+      zh: '默认策略',
+      es: 'Estrategia Predeterminada',
+      tr: 'Varsayılan Strateji'
+    },
+    description: { en: '', fa: '', ar: '', zh: '', es: '', tr: '' },
     prompt_template: '',
     display_template: '',
     fields: []

@@ -218,7 +218,7 @@ export const ModesManager: React.FC<ModesManagerProps> = ({
                   {idx + 1}
                 </span>
                 <span className="max-w-[150px] truncate sm:max-w-[200px]">
-                  {mode.title.en || mode.title.fa || `Mode ${idx + 1}`}
+                  {mode.title?.[activeLangTab] || mode.title?.en || mode.title?.fa || `Mode ${idx + 1}`}
                 </span>
                 <div className="flex items-center gap-1 opacity-60 group-hover:opacity-100">
                   <button
@@ -252,7 +252,7 @@ export const ModesManager: React.FC<ModesManagerProps> = ({
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#1e293b] pb-3">
           <div className="flex items-center gap-2">
             <span className="text-xs uppercase tracking-widest text-gray-400 font-bold">
-              Active Mode: <span className="text-blue-400">{activeMode.title.en || activeMode.title.fa}</span>
+              Active Mode: <span className="text-blue-400">{activeMode.title?.[activeLangTab] || activeMode.title?.en || activeMode.title?.fa}</span>
             </span>
           </div>
 
@@ -291,13 +291,22 @@ export const ModesManager: React.FC<ModesManagerProps> = ({
             <input
               type="text"
               dir={activeLangTab === 'fa' || activeLangTab === 'ar' ? 'rtl' : 'ltr'}
-              value={activeMode.title[activeLangTab] || ''}
-              onChange={(e) => updateActiveMode({
-                title: {
-                  ...activeMode.title,
-                  [activeLangTab]: e.target.value
-                }
-              })}
+              value={
+                typeof activeMode.title === 'object' && activeMode.title !== null
+                  ? (activeMode.title[activeLangTab] ?? '')
+                  : String(activeMode.title ?? '')
+              }
+              onChange={(e) => {
+                const currentTitle = typeof activeMode.title === 'object' && activeMode.title !== null
+                  ? { ...activeMode.title }
+                  : { en: typeof activeMode.title === 'string' ? activeMode.title : '', fa: '', ar: '', zh: '', es: '', tr: '' };
+                updateActiveMode({
+                  title: {
+                    ...currentTitle,
+                    [activeLangTab]: e.target.value
+                  }
+                });
+              }}
               placeholder={titlePlaceholders[activeLangTab]}
               className="w-full rounded-md border border-[#1e293b] bg-[#0d1117] px-3 py-2 text-xs text-gray-200 placeholder-gray-600 focus:border-blue-500 focus:outline-none"
             />
@@ -327,13 +336,22 @@ export const ModesManager: React.FC<ModesManagerProps> = ({
           <textarea
             dir={activeLangTab === 'fa' || activeLangTab === 'ar' ? 'rtl' : 'ltr'}
             rows={2}
-            value={activeMode.description[activeLangTab] || ''}
-            onChange={(e) => updateActiveMode({
-              description: {
-                ...activeMode.description,
-                [activeLangTab]: e.target.value
-              }
-            })}
+            value={
+              typeof activeMode.description === 'object' && activeMode.description !== null
+                ? (activeMode.description[activeLangTab] ?? '')
+                : String(activeMode.description ?? '')
+            }
+            onChange={(e) => {
+              const currentDesc = typeof activeMode.description === 'object' && activeMode.description !== null
+                ? { ...activeMode.description }
+                : { en: typeof activeMode.description === 'string' ? activeMode.description : '', fa: '', ar: '', zh: '', es: '', tr: '' };
+              updateActiveMode({
+                description: {
+                  ...currentDesc,
+                  [activeLangTab]: e.target.value
+                }
+              });
+            }}
             placeholder={descPlaceholders[activeLangTab]}
             className="w-full rounded-md border border-[#1e293b] bg-[#0d1117] px-3 py-2 text-xs text-gray-200 placeholder-gray-600 focus:border-blue-500 focus:outline-none"
           />

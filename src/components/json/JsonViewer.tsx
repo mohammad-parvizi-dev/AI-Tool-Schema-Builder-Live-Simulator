@@ -15,7 +15,7 @@ import {
   Code,
   Edit3
 } from 'lucide-react';
-import { RootToolSchema, ValidationError, ExportedRootSchema, ToolMode } from '../../types';
+import { RootToolSchema, ValidationError, ExportedRootSchema, ToolMode, LocalizedString } from '../../types';
 
 interface JsonViewerProps {
   schema: RootToolSchema;
@@ -42,28 +42,61 @@ function normalizeParsedSchema(parsed: any): RootToolSchema | null {
   const normalizedModes: ToolMode[] = rawModes.map((m: any, idx: number) => {
     const modeId = m.mode_id || m.slug || m.id || `mode_${idx + 1}`;
     
-    // Normalize multilingual title
-    let title = { en: `Mode ${idx + 1}`, fa: `حالت ${idx + 1}`, ar: `الوضع ${idx + 1}` };
+    // Normalize multilingual title supporting all 6 languages (en, fa, ar, zh, es, tr) and preserving any extra translations
+    let title: LocalizedString;
     if (typeof m.title === 'string') {
-      title = { en: m.title, fa: m.title, ar: m.title };
+      title = {
+        en: m.title,
+        fa: m.title,
+        ar: m.title,
+        zh: m.title,
+        es: m.title,
+        tr: m.title
+      };
     } else if (m.title && typeof m.title === 'object') {
       title = {
         en: m.title.en || `Mode ${idx + 1}`,
         fa: m.title.fa || m.title.en || `حالت ${idx + 1}`,
-        ar: m.title.ar || m.title.en || `الوضع ${idx + 1}`
+        ar: m.title.ar || m.title.en || `الوضع ${idx + 1}`,
+        zh: m.title.zh || m.title.en || `模式 ${idx + 1}`,
+        es: m.title.es || m.title.en || `Modo ${idx + 1}`,
+        tr: m.title.tr || m.title.en || `Mod ${idx + 1}`,
+        ...m.title
+      };
+    } else {
+      title = {
+        en: `Mode ${idx + 1}`,
+        fa: `حالت ${idx + 1}`,
+        ar: `الوضع ${idx + 1}`,
+        zh: `模式 ${idx + 1}`,
+        es: `Modo ${idx + 1}`,
+        tr: `Mod ${idx + 1}`
       };
     }
 
-    // Normalize multilingual description
-    let description = { en: '', fa: '', ar: '' };
+    // Normalize multilingual description supporting all 6 languages and preserving any extra translations
+    let description: LocalizedString;
     if (typeof m.description === 'string') {
-      description = { en: m.description, fa: m.description, ar: m.description };
+      description = {
+        en: m.description,
+        fa: m.description,
+        ar: m.description,
+        zh: m.description,
+        es: m.description,
+        tr: m.description
+      };
     } else if (m.description && typeof m.description === 'object') {
       description = {
         en: m.description.en || '',
-        fa: m.description.fa || m.description.en || '',
-        ar: m.description.ar || m.description.en || ''
+        fa: m.description.fa || '',
+        ar: m.description.ar || '',
+        zh: m.description.zh || '',
+        es: m.description.es || '',
+        tr: m.description.tr || '',
+        ...m.description
       };
+    } else {
+      description = { en: '', fa: '', ar: '', zh: '', es: '', tr: '' };
     }
 
     // Normalize fields
@@ -115,40 +148,75 @@ function normalizeParsedSchema(parsed: any): RootToolSchema | null {
  */
 function toCleanExportObject(schema: RootToolSchema): ExportedRootSchema {
   return {
-    modes: (schema.modes || []).map(m => ({
-      mode_id: m.mode_id || m.id,
-      title: m.title,
-      description: m.description,
-      prompt_template: m.prompt_template ?? '',
-      display_template: m.display_template || '',
-      fields: (m.fields || []).map(f => {
-        const cleanField: any = {
-          key: f.key,
-          label: f.label,
-          type: f.type,
-          required: Boolean(f.required)
+    modes: (schema.modes || []).map(m => {
+      // Clean title & description preserving all 6 languages (en, fa, ar, zh, es, tr) and custom keys
+      let cleanTitle: any;
+      if (typeof m.title === 'string') {
+        cleanTitle = {
+          en: m.title,
+          fa: m.title,
+          ar: m.title,
+          zh: m.title,
+          es: m.title,
+          tr: m.title
         };
-        if (f.value_type && f.value_type !== 'auto') cleanField.value_type = f.value_type;
-        if (f.description) cleanField.description = f.description;
-        if (f.default_value !== undefined && f.default_value !== '') cleanField.default_value = f.default_value;
-        if (f.placeholder) cleanField.placeholder = f.placeholder;
-        if (f.type === 'range_slider' && f.slider_config) cleanField.slider_config = f.slider_config;
-        if (f.type === 'number' && f.number_config) cleanField.number_config = f.number_config;
-        if (f.options && f.options.length > 0) {
-          cleanField.options = f.options.map(o => {
-            const cleanOpt: any = {
-              value: o.value,
-              label: o.label
-            };
-            if (o.symbol) cleanOpt.symbol = o.symbol;
-            if (o.badge) cleanOpt.badge = o.badge;
-            if (o.icon_url) cleanOpt.icon_url = o.icon_url;
-            return cleanOpt;
-          });
-        }
-        return cleanField;
-      })
-    }))
+      } else if (m.title && typeof m.title === 'object') {
+        cleanTitle = { ...m.title };
+      } else {
+        cleanTitle = { en: m.mode_id || 'Mode' };
+      }
+
+      let cleanDesc: any;
+      if (typeof m.description === 'string') {
+        cleanDesc = {
+          en: m.description,
+          fa: m.description,
+          ar: m.description,
+          zh: m.description,
+          es: m.description,
+          tr: m.description
+        };
+      } else if (m.description && typeof m.description === 'object') {
+        cleanDesc = { ...m.description };
+      } else {
+        cleanDesc = m.description || {};
+      }
+
+      return {
+        mode_id: m.mode_id || m.id,
+        title: cleanTitle,
+        description: cleanDesc,
+        prompt_template: m.prompt_template ?? '',
+        display_template: m.display_template || '',
+        fields: (m.fields || []).map(f => {
+          const cleanField: any = {
+            key: f.key,
+            label: f.label,
+            type: f.type,
+            required: Boolean(f.required)
+          };
+          if (f.value_type && f.value_type !== 'auto') cleanField.value_type = f.value_type;
+          if (f.description) cleanField.description = f.description;
+          if (f.default_value !== undefined && f.default_value !== '') cleanField.default_value = f.default_value;
+          if (f.placeholder) cleanField.placeholder = f.placeholder;
+          if (f.type === 'range_slider' && f.slider_config) cleanField.slider_config = f.slider_config;
+          if (f.type === 'number' && f.number_config) cleanField.number_config = f.number_config;
+          if (f.options && f.options.length > 0) {
+            cleanField.options = f.options.map(o => {
+              const cleanOpt: any = {
+                value: o.value,
+                label: o.label
+              };
+              if (o.symbol) cleanOpt.symbol = o.symbol;
+              if (o.badge) cleanOpt.badge = o.badge;
+              if (o.icon_url) cleanOpt.icon_url = o.icon_url;
+              return cleanOpt;
+            });
+          }
+          return cleanField;
+        })
+      };
+    })
   };
 }
 

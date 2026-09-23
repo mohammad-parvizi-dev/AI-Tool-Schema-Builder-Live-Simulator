@@ -23,7 +23,15 @@ export function compileTemplate(
   
   return template.replace(/\{([a-zA-Z0-9_-]+)\}/g, (match, key) => {
     if (key === 'language') {
-      return language === 'fa' ? 'فارسی (Persian)' : language === 'ar' ? 'العربية (Arabic)' : 'English';
+      const languageDisplayNames: Record<SupportedLanguage, string> = {
+        en: 'English',
+        fa: 'فارسی (Persian)',
+        ar: 'العربية (Arabic)',
+        zh: '中文 (Chinese)',
+        es: 'Español (Spanish)',
+        tr: 'Türkçe (Turkish)'
+      };
+      return languageDisplayNames[language] || 'English';
     }
     const val = values[key];
     if (val === undefined || val === null || val === '') {

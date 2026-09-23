@@ -336,12 +336,18 @@ export const forexGoldSchema: RootToolSchema = {
       title: {
         en: 'Session Open Sweep & Judas Swing',
         fa: 'شکار سشن و جوداس سوئینگ',
-        ar: 'افتتاح الجلسة وحركة جوداس'
+        ar: 'افتتاح الجلسة وحركة جوداس',
+        zh: '开盘流动性掠夺与假突破模型',
+        es: 'Barrido de Sesión y Movimiento Judas',
+        tr: 'Seans Açılış Avı ve Judas Swing'
       },
       description: {
         en: 'Exploits the classic 08:00 GMT London open fakeout and 13:30 NY open liquidity sweeps.',
         fa: 'بهره‌برداری از شکست‌های فیک بازگشایی سشن لندن و نیویورک بر اساس الگوهای ICT.',
-        ar: 'استغلال الاختراق الوهمي في افتتاح لندن وجلسة نيويورك.'
+        ar: 'استغلال الاختراق الوهمي في افتتاح لندن وجلسة نيويورك.',
+        zh: '捕捉伦敦开盘 08:00 GMT 与纽约开盘 13:30 的经典诱多诱空假突破流动性猎杀。',
+        es: 'Aprovecha el engaño clásico de apertura de Londres y los barridos de liquidez de Nueva York.',
+        tr: 'Londra ve New York açılışlarındaki klasik sahte kırılımları ve likidite avlarını değerlendirir.'
       },
       icon: 'Clock',
       badge_color: 'amber',
@@ -431,12 +437,18 @@ export const warrenBuffettStockSchema: RootToolSchema = {
       title: {
         en: 'Economic Moat & Competitive Advantage',
         fa: 'ارزیابی خندق اقتصادی و مزیت رقابتی',
-        ar: 'تدقيق الخندق الاقتصادي والميزة التنافسية'
+        ar: 'تدقيق الخندق الاقتصادي والميزة التنافسية',
+        zh: '护城河评级与持久竞争优势',
+        es: 'Foso Económico y Ventaja Competitiva',
+        tr: 'Ekonomik Hendek ve Rekabet Avantajı'
       },
       description: {
         en: 'Evaluates pricing power, network effects, brand equity, and barrier to entry like Berkshire Hathaway.',
         fa: 'ارزیابی قدرت قیمت‌گذاری، اثر شبکه‌ای، اعتبار برند و موانع ورود به سبک وارن بافت.',
-        ar: 'تقييم قوة التسعير وتأثير الشبكة وقيمة العلامة التجارية على طريقة وارن بافيت.'
+        ar: 'تقييم قوة التسعير وتأثير الشبكة وقيمة العلامة التجارية على طريقة وارن بافيت.',
+        zh: '评估类似伯克希尔哈撒韦投资标准的定价权、网络效应、品牌价值与准入壁垒。',
+        es: 'Evalúa el poder de fijación de precios, efectos de red, marca y barreras de entrada al estilo Warren Buffett.',
+        tr: 'Berkshire Hathaway tarzı fiyatlandırma gücü, ağ etkileri, marka değeri ve giriş engellerini değerlendirir.'
       },
       icon: 'Shield',
       badge_color: 'emerald',
@@ -529,12 +541,18 @@ Provide a deep Value Investing analysis:
       title: {
         en: 'DCF Intrinsic Value & Margin of Safety',
         fa: 'ارزش ذاتی تنزیل جریان نقدی و حاشیه امنیت',
-        ar: 'القيمة العادلة وهوامش الأمان'
+        ar: 'القيمة العادلة وهوامش الأمان',
+        zh: 'DCF 现金流折现内在价值与安全边际',
+        es: 'Valor Intrínseco DCF y Margen de Seguridad',
+        tr: 'DCF İçsel Değeri ve Güvenlik Marjı'
       },
       description: {
         en: 'Calculates discounted cash flow intrinsic fair value with strict margin of safety discounts.',
         fa: 'محاسبه ارزش ذاتی بر اساس تنزیل جریان وجوه نقد آزاد و تعیین قیمت خرید با حاشیه امنیت.',
-        ar: 'حساب القيمة العادلة ومعدل الخصم وهامش الأمان للمستثمر.'
+        ar: 'حساب القيمة العادلة ومعدل الخصم وهامش الأمان للمستثمر.',
+        zh: '通过严苛的安全边际折现计算自由现金流折现内在公允价值与建议买入限价。',
+        es: 'Calcula el valor justo intrínseco por flujo de caja descontado con estrictos descuentos de margen de seguridad.',
+        tr: 'Sıkı güvenlik marjı indirimleriyle indirgenmiş nakit akışı içsel adil değerini hesaplar.'
       },
       icon: 'BarChart2',
       badge_color: 'blue',
@@ -650,12 +668,18 @@ export const blankSchemaPreset: RootToolSchema = {
       title: {
         en: 'Primary Strategy Mode',
         fa: 'حالت استراتژی اصلی',
-        ar: 'وضع الاستراتيجية الرئيسي'
+        ar: 'وضع الاستراتيجية الرئيسي',
+        zh: '主要策略模式',
+        es: 'Modo de Estrategia Principal',
+        tr: 'Birincil Strateji Modu'
       },
       description: {
         en: 'Configure your primary analysis mode parameters.',
         fa: 'تنظیم پارامترهای تحلیل حالت اصلی.',
-        ar: 'تكوين معلمات وضع التحليل الرئيسي.'
+        ar: 'تكوين معلمات وضع التحليل الرئيسي.',
+        zh: '配置您的主要分析模式参数与提示词。',
+        es: 'Configura los parámetros del modo de análisis principal.',
+        tr: 'Birincil analiz modu parametrelerini yapılandırın.'
       },
       prompt_template: 'Act as an expert analyst. Analyze {asset} on {timeframe}. Language: {language}.',
       display_template: 'Analysis: {asset} • {timeframe}',
